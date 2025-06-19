@@ -1,0 +1,12 @@
+{
+    "name": "vive-tracker-threejs",
+    "version": "1.0.0",
+    "description": "Three.js VIVE Tracker Visualization with CORS support",
+    "scripts": {
+        "start": "http-server --cors -p 8000 -o",
+        "serve": "http-server --cors -p 8000"
+    },
+    "devDependencies": {
+        "http-server": "^14.1.1"
+    }
+}
