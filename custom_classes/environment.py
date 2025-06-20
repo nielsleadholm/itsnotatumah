@@ -28,6 +28,12 @@ class UltrasoundActionSpace(tuple, ActionSpace):
 
 
 class UltrasoundEnvironment(EmbodiedEnvironment):
+    """Base Ultrasound Environment.
+
+    NOTE: This is not fully functional (doesn't retrieve probe pose from trackers). Use
+    JSONDatasetUltrasoundEnvironment or ProbeTriggeredUltrasoundEnvironment for
+    actual data loading and state retrieval.
+    """
     def __init__(self, data_path=None):
         """Initialize environment.
 
@@ -122,7 +128,9 @@ class UltrasoundEnvironment(EmbodiedEnvironment):
         Returns:
             The agent state.
         """
-        # TODO: get location from position tracker
+        # NOTE: these are just placeholders. In the JSONDatasetUltrasoundEnvironment and
+        # ProbeTriggeredUltrasoundEnvironment, the state actual probe pose is retrieved
+        # from the trackers.
         agent_position = np.array([0, 0, 0])
         agent_rotation = qt.quaternion(1, 0, 0, 0)
 
