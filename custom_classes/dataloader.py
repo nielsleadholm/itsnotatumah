@@ -24,8 +24,8 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
     def __init__(self, patch_size, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.patch_size = patch_size
-        # TODO: replace placeholder values during supervised training
-        euler_rotation = self.rng.uniform(0, 360, 3)
+        # NOTE: We don't have ground truth rotation for the object so just use 0.
+        euler_rotation = np.zeros(3)
         q = Rotation.from_euler("xyz", euler_rotation, degrees=True).as_quat()
         quat_rotation = scipy_to_numpy_quat(q)
         self.primary_target = {
