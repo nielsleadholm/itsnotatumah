@@ -24,7 +24,7 @@ class UltrasoundSM(SensorModuleBase):
             "center_edge": None,
             "fitted_circle": None,
             "point_normal": None,
-            "principal_curvatures": None,
+            "curvature": None,
             "mean_depth": 0.0,
             "observed_locations": [],
             "normal_rel_world": [],
@@ -64,7 +64,7 @@ class UltrasoundSM(SensorModuleBase):
         # Store data for plotting
         self.plotting_data["mean_depth"] = data["patch_depth"]
         self.plotting_data["point_normal"] = normal_rel_patch
-        self.plotting_data["principal_curvatures"] = np.array([curvature, curvature])
+        self.plotting_data["curvature"] = curvature
 
         CMP_output = State(
             location=patch_world_location,

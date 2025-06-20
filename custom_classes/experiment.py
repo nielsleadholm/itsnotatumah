@@ -18,7 +18,7 @@ class FeatureLogger:
     center_edge: Optional[Tuple[float, float]] = None
     fitted_circle: Optional[Tuple[float, float, float]] = None
     point_normal: Optional[np.ndarray] = None
-    principal_curvatures: Optional[np.ndarray] = None
+    curvature: Optional[np.ndarray] = None
     mean_depth: float = 0.0
 
     def update(self, **kwargs):
@@ -36,9 +36,7 @@ class FeatureLogger:
             "point_normal": [self.point_normal]
             if self.point_normal is not None
             else [None],
-            "principal_curvatures": self.principal_curvatures
-            if self.principal_curvatures is not None
-            else [0, 0],
+            "curvature": self.curvature,
             "mean_depth": self.mean_depth,
         }
 
@@ -87,11 +85,7 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                 point_normal = features.get("point_normal", None)
                 observed_locations = features.get("observed_locations", [])
                 normal_rel_world = features.get("normal_rel_world", [])
-                curvature = (
-                    features.get("principal_curvatures", [0, 0])[0]
-                    if features.get("principal_curvatures") is not None
-                    else 0
-                )
+                curvature = features.get("curvature", 0)
                 depth_meters = features.get("mean_depth", depth)
 
                 save_path = None
