@@ -13,6 +13,9 @@ class PlottingConfig:
         save_path: Directory to save plots. If None, plots will be displayed
         plot_frequency: How often to plot (every N steps)
         plot_patch_features: Whether to plot patch features
+        show_hypothesis_space: Whether to show the hypothesis space
+        display_mlh_focus_plot: Whether to display the MLH path instead of all current
+            hypotheses.
     """
 
     enabled: bool = False

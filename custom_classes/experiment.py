@@ -2,7 +2,7 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import numpy as np
 from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
@@ -18,7 +18,7 @@ class FeatureLogger:
     center_edge: Optional[Tuple[float, float]] = None
     fitted_circle: Optional[Tuple[float, float, float]] = None
     point_normal: Optional[np.ndarray] = None
-    principal_curvatures: Optional[np.ndarray] = None
+    curvature: Optional[np.ndarray] = None
     mean_depth: float = 0.0
 
     def update(self, **kwargs):
@@ -36,9 +36,7 @@ class FeatureLogger:
             "point_normal": [self.point_normal]
             if self.point_normal is not None
             else [None],
-            "principal_curvatures": self.principal_curvatures
-            if self.principal_curvatures is not None
-            else [0, 0],
+            "curvature": self.curvature,
             "mean_depth": self.mean_depth,
         }
 
@@ -74,9 +72,6 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                 agent_id = self.model.motor_system._policy.agent_id
                 # Get input image and patch from the patch sensor
                 patch_data = observation[agent_id]["patch"]
-
-                input_image = patch_data["img"]
-                patch_image = patch_data["img"]
                 depth = patch_data["patch_depth"]
 
                 # Get features from the sensor module
@@ -90,16 +85,9 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                 point_normal = features.get("point_normal", None)
                 observed_locations = features.get("observed_locations", [])
                 normal_rel_world = features.get("normal_rel_world", [])
-                curvature = (
-                    features.get("principal_curvatures", [0, 0])[0]
-                    if features.get("principal_curvatures") is not None
-                    else 0
-                )
-                depth_meters = features.get(
-                    "mean_depth", depth
-                )  # Fallback to patch_depth if not in features
+                curvature = features.get("curvature", 0)
+                depth_meters = features.get("mean_depth", depth)
 
-                # Determine save path if enabled
                 save_path = None
                 if self.plotting_config.get("save_path"):
                     os.makedirs(self.plotting_config["save_path"], exist_ok=True)
@@ -110,14 +98,6 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                 # Plot based on config
                 if self.plotting_config.get("plot_patch_features", False):
                     full_image = self.dataloader.dataset.env.get_full_image()
-
-                    # Convert to numpy array if needed
-                    if not isinstance(full_image, np.ndarray):
-                        try:
-                            full_image = np.array(full_image, dtype=np.float32)
-                        except Exception as e:
-                            print(f"Error converting image to numpy array: {e}")
-                            full_image = patch_data["img"]  # Fallback to patch image
 
                     plot_combined_figure(
                         input_image=full_image,
@@ -134,33 +114,19 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                         show_hypothesis_space=self.plotting_config.get(
                             "show_hypothesis_space", False
                         ),
-                        lm_instance=self.model.learning_modules[0]
-                        if self.model.learning_modules
-                        else None,
+                        lm_instance=self.model.learning_modules[0],
                         hypothesis_input_channel=self.plotting_config.get(
                             "hypothesis_input_channel", "patch"
                         ),
                         hypothesis_evidence_threshold=self.plotting_config.get(
                             "hypothesis_evidence_threshold", -np.inf
                         ),
-                        hypothesis_ax_range=self.plotting_config.get(
-                            "hypothesis_ax_range", 0.2
-                        ),
-                        hypothesis_view_elev=self.plotting_config.get(
-                            "hypothesis_view_elev", 30
-                        ),
-                        hypothesis_view_azim=self.plotting_config.get(
-                            "hypothesis_view_azim", -60
-                        ),
                         display_mlh_focus_plot=self.plotting_config.get(
                             "display_mlh_focus_plot", False
                         ),
                     )
 
-            # Regular experiment step logic
-            if self.show_sensor_output:
-                self.show_observations(observation, loader_step)
-
+            # Check if episode should terminate
             if self.model.check_reached_max_matching_steps(self.max_steps):
                 return loader_step
 

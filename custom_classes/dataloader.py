@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/MIT.
 import copy
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.transform import Rotation
 from tbp.monty.frameworks.environments.embodied_data import (
@@ -21,12 +20,11 @@ from tbp.monty.frameworks.utils.transform_utils import scipy_to_numpy_quat
 
 
 class UltrasoundDataLoader(EnvironmentDataLoader):
-    def __init__(self, patch_size, top_skip, *args, **kwargs):
+    def __init__(self, patch_size, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.patch_size = patch_size
-        self.top_skip = top_skip
-        # TODO: replace placeholder values during supervised training
-        euler_rotation = self.rng.uniform(0, 360, 3)
+        # NOTE: We don't have ground truth rotation for the object so just use 0.
+        euler_rotation = np.zeros(3)
         q = Rotation.from_euler("xyz", euler_rotation, degrees=True).as_quat()
         quat_rotation = scipy_to_numpy_quat(q)
         self.primary_target = {
@@ -51,6 +49,8 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
 
     def __next__(self):
         self._observation, proprioceptive_state = self.dataset[None]
+        if self._observation is None:
+            raise StopIteration
         self.motor_system._state = (
             MotorSystemState(proprioceptive_state) if proprioceptive_state else None
         )
@@ -77,7 +77,8 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
     def extract_patch(self, observation):
         full_image = np.array(observation["agent_id_0"]["ultrasound"]["img"])
         patch, patch_depth = self.find_patch_with_highest_gradient(
-            full_image, patch_size=self.patch_size, top_skip=self.top_skip
+            full_image,
+            patch_size=self.patch_size,
         )
         observation["agent_id_0"]["patch"] = {}
         observation["agent_id_0"]["patch"]["img"] = patch
@@ -87,7 +88,7 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         return observation
 
     def find_patch_with_highest_gradient(
-        self, full_image, patch_size, top_skip, grid_size=9, window_size=100
+        self, full_image, patch_size, grid_size=9, window_size=100
     ):
         """Finds the first patch with a significant horizontal edge in the ultrasound image.
 
@@ -100,16 +101,18 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         Args:
             full_image (np.ndarray): The full ultrasound image of shape (N, M)
             patch_size (int): Size of the square patch to extract
-            top_skip (int): Number of pixels to skip from the top of the image
-
+            grid_size (int): Number of bins to group the pixel values into along each
+                dimension of the patch for calculating the mean intensity.
+            window_size (int): Size of the window to calculate the local mean and std
+                of the gradient.
         Returns:
             tuple: (patch, location) where:
                 - patch (np.ndarray): The first patch with significant horizontal edge
-                - location (tuple): (y, x) coordinates of the patch center
+                - location (tuple): (y, x) pixel coordinates of the patch center
         """
         height, width = full_image.shape
         x_center = width // 2
-        start_y = top_skip + patch_size // 2
+        start_y = patch_size // 2
 
         best_location = None
         y_positions = []
@@ -289,10 +292,10 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         Args:
             img: The input ultrasound image
             pixel_location: Tuple of (y, x) coordinates
-            max_depth: Maximum depth in cm
+            max_depth: Depth setting of the ultrasound probe
 
         Returns:
-            float: Estimated depth in cm
+            float: Estimated depth of patch in meters
         """
         depth_perc = pixel_location[0] / img.shape[0]
         depth_cm = depth_perc * max_depth

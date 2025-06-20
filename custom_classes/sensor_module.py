@@ -24,7 +24,7 @@ class UltrasoundSM(SensorModuleBase):
             "center_edge": None,
             "fitted_circle": None,
             "point_normal": None,
-            "principal_curvatures": None,
+            "curvature": None,
             "mean_depth": 0.0,
             "observed_locations": [],
             "normal_rel_world": [],
@@ -47,7 +47,8 @@ class UltrasoundSM(SensorModuleBase):
 
         self.plotting_data["observed_locations"].append(patch_world_location)
 
-        # normal_rel_patch will point up (in y direction). In the world frame it should point towards the agent.
+        # normal_rel_patch will point up (in y direction). In the world frame it should
+        # point towards the agent.
         normal_rel_patch, curvature = self.extract_patch_pose_feat(data["img"])
         # apply tracker orientation quaternion to patch pose feat
         # To ensure normal_rel_world points towards the agent, we negate normal_rel_patch.
@@ -64,7 +65,7 @@ class UltrasoundSM(SensorModuleBase):
         # Store data for plotting
         self.plotting_data["mean_depth"] = data["patch_depth"]
         self.plotting_data["point_normal"] = normal_rel_patch
-        self.plotting_data["principal_curvatures"] = np.array([curvature, curvature])
+        self.plotting_data["curvature"] = curvature
 
         CMP_output = State(
             location=patch_world_location,
@@ -73,14 +74,15 @@ class UltrasoundSM(SensorModuleBase):
                 "pose_fully_defined": False,
             },
             non_morphological_features={
-                "curvature": curvature,  # Keep only the scalar features
+                # NOTE: This will not match with any of the curvature features in the
+                # pretrained models from the simulation.
+                "curvature": curvature,
             },
             confidence=1,
             use_state=True,
             sender_id=self.sensor_module_id,
             sender_type="SM",
         )
-
         return CMP_output
 
     def get_patch_world_location(
@@ -100,7 +102,7 @@ class UltrasoundSM(SensorModuleBase):
         relative_offset = offset_distance * rotated_offset_direction
         agent_position = agent_position + relative_offset
 
-        # adding the 0.09 + depth
+        # adding the 0.095 + depth
         fake_sensor_rel_world = qt.as_rotation_matrix(agent_rotation) @ np.array(
             [0.0, 1.0, 0.0]
         )
@@ -117,8 +119,7 @@ class UltrasoundSM(SensorModuleBase):
         return patch_world_location
 
     def calculate_patch_world_orientation(self, patch_normal_in_world_frame):
-        """
-        Calculates the patch's orientation in the world frame.
+        """Calculates the patch's orientation in the world frame.
 
         Args:
             patch_normal_in_world_frame (np.ndarray): The patch's surface normal vector,
@@ -129,8 +130,7 @@ class UltrasoundSM(SensorModuleBase):
                         The rows of the matrix are orthonormal basis vectors (normal, dir1, dir2)
                         expressed in world coordinates.
         """
-        # patch_normal_in_world_frame is already a unit vector due to prior processing or should be.
-        # For robustness, ensure it's normalized.
+        # make sure patch_normal_in_world_frame is normalized.
         normal_vector = patch_normal_in_world_frame / np.linalg.norm(
             patch_normal_in_world_frame
         )
@@ -170,7 +170,6 @@ class UltrasoundSM(SensorModuleBase):
     def get_tracker_position_and_orientation(
         self, proprioceptive_state_agent, proprioceptive_state_probe
     ):
-        # TODO: not sure this is the best place to do this
         # TODO: make sure we don't need to account for sensor rel. agent position in our
         # scenario (input proprioceptive_state_patch additionally)
         tracker_position = np.array(proprioceptive_state_agent["position"])
@@ -196,25 +195,14 @@ class UltrasoundSM(SensorModuleBase):
         return tracker_position, probe_position, tracker_orientation, probe_orientation
 
     def update_state(self, state):
-        """Update information about the sensors location and rotation."""
-        # TODO: incorporate pixel depth here
-        agent_position = state["position"]
-        sensor_position = state["sensors"]["ultrasound"]["position"]
-        if "motor_only_step" in state.keys():
-            self.motor_only_step = state["motor_only_step"]
-        else:
-            self.motor_only_step = False
+        """Currently pass state info to step function.
 
-        agent_rotation = np.array(state["rotation"])
-        sensor_rotation = np.array(state["sensors"]["ultrasound"]["rotation"])
-        self.state = {
-            "location": agent_position + sensor_position,
-            "rotation": agent_rotation * sensor_rotation,
-        }
+        TODO: should probably better do this here.
+        """
+        pass
 
     def extract_patch_pose_feat(self, patch):
-        """
-        Extract patch pose features including curvature and surface normal from a 256x256 grayscale image.
+        """Extract patch pose features including curvature and surface normal from a 256x256 grayscale image.
 
         First extracts edge points, then fits a circle to these points, and finally calculates
         the normal vector based on the fitted curve at the center location.
@@ -256,8 +244,7 @@ class UltrasoundSM(SensorModuleBase):
         return normal_3d, curvature
 
     def extract_edge_points(self, image):
-        """
-        Extract edge points from the image by scanning each column for intensity values
+        """Extract edge points from the image by scanning each column for intensity values
         above a threshold.
 
         Args:
@@ -309,9 +296,9 @@ class UltrasoundSM(SensorModuleBase):
         return all_column_points_tuples, center_edge_point
 
     def fit_circle_to_points(self, image, all_column_points_np, edge_point):
-        """
-        Fits a circle to the detected edge points, ensuring the circle passes through
-        the edge point at the center column.
+        """Fits a circle to the detected edge points to get curvature.
+
+        Also makes sure the circle passes through the edge point at the center column.
 
         Args:
             image (np.ndarray): The input image for visualization.
@@ -563,8 +550,7 @@ class UltrasoundSM(SensorModuleBase):
         return fit_params, final_curvature
 
     def calculate_normal_from_fit(self, fit_params, edge_point):
-        """
-        Calculate the normal vector based on the fitted circle/line.
+        """Calculate the normal vector based on the fitted circle/line.
 
         Args:
             fit_params (dict): Dictionary containing fit parameters.

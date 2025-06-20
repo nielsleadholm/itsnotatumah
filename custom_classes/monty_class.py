@@ -6,10 +6,7 @@
 # Use of this source code is governed by the MIT
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
-import copy
 
-import matplotlib.pyplot as plt
-import numpy as np
 import requests  # Add requests for HTTP communication
 from tbp.monty.frameworks.models.evidence_matching.model import (
     MontyForEvidenceGraphMatching,
@@ -21,7 +18,7 @@ class MontyForEvidenceGraphMatchingWithGoalStateServer(MontyForEvidenceGraphMatc
     #     super().__init__(*args, **kwargs)
 
     #     # it does not make sense for the wait factor to exponentially
-    #     # grow when objects are veiewed for only a few dozen steps.
+    #     # grow when objects are viewed for only a few dozen steps.
     #     self.gsg.wait_growth_multiplier = 1
 
     def _pass_infos_to_motor_system(self):

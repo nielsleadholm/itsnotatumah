@@ -21,13 +21,19 @@ from tbp.monty.frameworks.environments.two_d_data import (
 
 
 class UltrasoundActionSpace(tuple, ActionSpace):
-    """Action space for 2D data environments."""
+    """Action space placeholder (Monty doesn't act here)."""
 
     def sample(self):
         return self.rng.choice(self)
 
 
 class UltrasoundEnvironment(EmbodiedEnvironment):
+    """Base Ultrasound Environment.
+
+    NOTE: This is not fully functional (doesn't retrieve probe pose from trackers). Use
+    JSONDatasetUltrasoundEnvironment or ProbeTriggeredUltrasoundEnvironment for
+    actual data loading and state retrieval.
+    """
     def __init__(self, data_path=None):
         """Initialize environment.
 
@@ -43,7 +49,7 @@ class UltrasoundEnvironment(EmbodiedEnvironment):
         self.current_scene = 0
         self.step_count = 0
 
-        # Just for compatibility. TODO: find cleaner way to do this.
+        # Just for compatibility.
         self._agents = [
             type(
                 "FakeAgent",
@@ -61,7 +67,7 @@ class UltrasoundEnvironment(EmbodiedEnvironment):
         """Retrieve the next observation.
 
         Args:
-            action: next: load the next image + tracking data.
+            action: load the next image + tracking data.
 
         Returns:
             observation (dict).
@@ -122,7 +128,9 @@ class UltrasoundEnvironment(EmbodiedEnvironment):
         Returns:
             The agent state.
         """
-        # TODO: get location from position tracker
+        # NOTE: these are just placeholders. In the JSONDatasetUltrasoundEnvironment and
+        # ProbeTriggeredUltrasoundEnvironment, the state actual probe pose is retrieved
+        # from the trackers.
         agent_position = np.array([0, 0, 0])
         agent_rotation = qt.quaternion(1, 0, 0, 0)
 
@@ -190,12 +198,14 @@ class JSONDatasetUltrasoundEnvironment(UltrasoundEnvironment):
         """Retrieve the next observation.
 
         Args:
-            action: next: load the next image + tracking data.
+            action: unused. We just load the next data point in the dataset.
 
         Returns:
             observation (dict).
         """
         self.current_ultrasound_image, self.current_state = self.load_next_data_point()
+        if self.current_ultrasound_image is None:
+            return None
 
         obs = self.current_ultrasound_image
         self.step_count += 1
@@ -203,10 +213,17 @@ class JSONDatasetUltrasoundEnvironment(UltrasoundEnvironment):
 
     def load_next_data_point(self):
         """Load the next ultrasound image from the dataset."""
-        with open(os.path.join(self.data_path, f"{self.step_count}.json"), "r") as f:
-            data = json.load(f)
+        try:
+            with open(
+                os.path.join(self.data_path, f"{self.step_count}.json"), "r"
+            ) as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            # This will end the episode
+            return None, None
 
         self.full_image = np.array(data["obs"]["agent_id_0"]["ultrasound"]["img"])
+        # Overwrite the position of the probe.
         # TODO: can remove this now that it is added to the ProbeTriggeredUltrasoundEnvironment
         # (If used during data collection)
         # TODO: this just looked like it gave the best results but it is not ideal yet.

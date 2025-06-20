@@ -14,6 +14,12 @@ import sys
 
 
 def import_config_from_monty(config_file, config_name):
+    """Import config from tbp.monty.
+
+    NOTE: This looks at the local tbp.monty directory, not the installed version.
+    TODO: Make this use the installed version. This currently doesn't work since the
+    benchmarks/configs directory is not installed.
+    """
     full_path = os.path.expanduser(f"~/tbp/tbp.monty/benchmarks/configs/{config_file}")
     sys.path.insert(0, os.path.expanduser("~/tbp/tbp.monty"))
     spec = importlib.util.spec_from_file_location(

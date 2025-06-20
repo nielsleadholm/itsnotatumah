@@ -21,7 +21,6 @@ from tbp.monty.frameworks.config_utils.policy_setup_utils import (
     make_informed_policy_config,
 )
 from tbp.monty.frameworks.environments.embodied_data import EnvironmentDataset
-from tbp.monty.frameworks.environments.ycb import DISTINCT_OBJECTS
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
@@ -51,6 +50,8 @@ from custom_classes.sensor_module import UltrasoundSM
 
 from .config_utils import import_config_from_monty
 
+# Ultrasound experiments can use the models trained in simulation when inferring objects
+# in the real world.
 pretrained_dir = import_config_from_monty("defaults.py", "pretrained_dir")
 model_path_tbp_robot_lab = os.path.join(
     pretrained_dir,
@@ -79,7 +80,7 @@ default_evidence_lm_config = {
         "hypotheses_updater_args": {"max_nneighbors": 10},
         # Use this to update all hypotheses with evidence > 80% of max evidence (faster)
         "evidence_update_threshold": "80%",
-        "use_multithreading": False,  # TODO: comment out again after debugging
+        "use_multithreading": False,  # NOTE: could set to True when not debugging
         # NOTE: Currently not used when loading pretrained graphs.
         "max_graph_size": 0.3,  # 30cm
         "num_model_voxels_per_dim": 100,
@@ -90,6 +91,8 @@ default_evidence_lm_config = {
 
 num_pretrain_steps = 184
 
+# Base experiment for experimenting. This isns't really used anymore beside for the
+# other experiments to inherit from.
 base_ultrasound_experiment = {
     "experiment_class": UltrasoundExperiment,
     "experiment_args": EvalExperimentArgs(
@@ -101,15 +104,12 @@ base_ultrasound_experiment = {
         wandb_group="benchmark_experiments",
         # Comment in for quick debugging (turns of wandb and increases logging)
         wandb_handlers=[],
-        # TODO: monty_experiment.py logger_args only defined target of dataloader is
-        # instance of EnvironmentDataLoaderPerObject so the current monty logger doesn't
-        # work if it is not.
         monty_handlers=[],
         monty_log_level="SILENT",
         python_log_level="DEBUG",
     ),
     "plotting_config": PlottingConfig(
-        enabled=False,
+        enabled=True,
         save_path=os.path.join(os.environ["MONTY_DATA"], "ultrasound_test_set/plots"),
         plot_frequency=1,
         plot_patch_features=True,
@@ -119,7 +119,8 @@ base_ultrasound_experiment = {
     "monty_config": {
         "monty_class": MontyForEvidenceGraphMatching,
         "monty_args": MontyArgs(
-            min_eval_steps=200, num_exploratory_steps=num_pretrain_steps
+            min_eval_steps=20,
+            num_exploratory_steps=num_pretrain_steps,
         ),
         "learning_module_configs": {"learning_module_0": default_evidence_lm_config},
         "sensor_module_configs": {
@@ -160,30 +161,26 @@ base_ultrasound_experiment = {
         "transform": None,
     },
     "eval_dataloader_class": UltrasoundDataLoader,
-    "eval_dataloader_args": {
-        "patch_size": 256,
-        "top_skip": 0,  # TODO: remove top_skip parameter
-    },
+    "eval_dataloader_args": {"patch_size": 256},
 }
 
+# Experiment for testing offline on a dataset that was collected with the ultrasound
+# probe and saved to JSON files. Can be used to experiment without having the whole
+# ultrasounds and tracking set up and for repeatable experiments.
 json_dataset_ultrasound_experiment = deepcopy(base_ultrasound_experiment)
 json_dataset_ultrasound_experiment["dataset_args"]["env_init_func"] = (
     JSONDatasetUltrasoundEnvironment
 )
 json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
-    # "data_path": os.path.join(
-    #     os.environ["MONTY_DATA"], "ultrasound_test_set/demo_object_spam/"
-    # ),
     "data_path": os.path.join(
-        os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"
+        os.environ["MONTY_DATA"], "ultrasound_test_set/demo_object_spam/"
     ),
-}
-json_dataset_ultrasound_experiment["eval_dataloader_args"] = {
-    "patch_size": 256,
-    "top_skip": 0,
+    # "data_path": os.path.join(
+    #     os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"
+    # ),
 }
 
-
+# For learning we use the DisplacementGraphLM.
 LM_config_for_learning = {
     "learning_module_0": {
         "learning_module_class": DisplacementGraphLM,
@@ -201,15 +198,14 @@ LM_config_for_learning = {
         },
     }
 }
+# Loads an offline .json dataset and trains models on it.
 json_dataset_ultrasound_learning = deepcopy(json_dataset_ultrasound_experiment)
 json_dataset_ultrasound_learning.update(
     {
         "experiment_args": EvalExperimentArgs(
-            # model_name_or_path=model_path_tbp_robot_lab,
             do_train=True,
             do_eval=False,
             n_train_epochs=1,
-            # TODO: weird that we have to set both of those + num_exploratory_steps
             max_total_steps=num_pretrain_steps,
             max_train_steps=num_pretrain_steps,
         ),
@@ -223,10 +219,7 @@ json_dataset_ultrasound_learning.update(
             },
         },
         "train_dataloader_class": UltrasoundDataLoader,
-        "train_dataloader_args": {
-            "patch_size": 256,
-            "top_skip": 0,
-        },
+        "train_dataloader_args": {"patch_size": 256},
     }
 )
 json_dataset_ultrasound_learning["monty_config"]["learning_module_configs"] = (
