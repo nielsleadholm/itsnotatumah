@@ -109,7 +109,7 @@ base_ultrasound_experiment = {
         python_log_level="DEBUG",
     ),
     "plotting_config": PlottingConfig(
-        enabled=False,
+        enabled=True,
         save_path=os.path.join(os.environ["MONTY_DATA"], "ultrasound_test_set/plots"),
         plot_frequency=1,
         plot_patch_features=True,

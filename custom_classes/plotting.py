@@ -41,15 +41,10 @@ def _plot_single_hypothesis_on_ax(
 ):
     """Helper to plot hypothesis space for a single object directly from LM."""
     ax.clear()
-    model_subsampling_rate = 1
     hypothesis_subsampling_rate = 1
 
-    if obj_id is None or obj_id not in lm.possible_locations:
-        ax.set_title(
-            f"{title_prefix}: {obj_id if obj_id else 'N/A'} (No Data or Invalid ID)"
-        )
-        ax.axis("off")
-        return
+    current_title = f"{title_prefix}: {obj_id}"
+    ax.set_title(current_title)
 
     locs = np.array(lm.possible_locations.get(obj_id, []))
     evidence = np.array(lm.evidence.get(obj_id, []))
@@ -60,62 +55,24 @@ def _plot_single_hypothesis_on_ax(
         evidence = np.empty((0,))
 
     # Plot Object Graph Model Points (Grey Scatter)
-    try:
-        object_model_instance = lm.graph_memory.get_graph(obj_id, input_feature_channel)
-    except Exception as e:
-        object_model_instance = None
+    object_model_instance = lm.graph_memory.get_graph(obj_id, input_feature_channel)
+    graph_data_source = object_model_instance._graph
 
-    current_title = f"{title_prefix}: {obj_id}"
-    if not object_model_instance:
-        current_title += " (Model Graph Missing)"
-    ax.set_title(current_title)
+    original_nodes_to_plot = None
+    if hasattr(graph_data_source, "pos") and graph_data_source.pos is not None:
+        original_nodes_to_plot = np.array(graph_data_source.pos)
+        nodes_for_scatter = original_nodes_to_plot
 
-    if object_model_instance:
-        graph_data_source = None
-        if hasattr(object_model_instance, "_graph"):
-            graph_data_source = object_model_instance._graph
-        elif hasattr(object_model_instance, "graph"):
-            graph_data_source = object_model_instance.graph
-        else:
-            graph_data_source = object_model_instance
-
-        original_nodes_to_plot = None
-        if hasattr(graph_data_source, "pos") and graph_data_source.pos is not None:
-            original_nodes_to_plot = np.array(graph_data_source.pos)
-            if (
-                original_nodes_to_plot.ndim == 2
-                and original_nodes_to_plot.shape[0] > 0
-                and original_nodes_to_plot.shape[1] == 3
-            ):
-                if (
-                    len(original_nodes_to_plot) >= model_subsampling_rate
-                    and model_subsampling_rate > 0
-                ):
-                    nodes_for_scatter = original_nodes_to_plot[::model_subsampling_rate]
-                else:
-                    nodes_for_scatter = original_nodes_to_plot
-
-                if nodes_for_scatter.shape[0] > 0:
-                    ax.scatter(
-                        nodes_for_scatter[:, 1],  # Original Y to MPL X
-                        nodes_for_scatter[:, 0],  # Original X to MPL Y
-                        nodes_for_scatter[:, 2],  # Original Z to MPL Z
-                        c="grey",
-                        s=2,
-                        alpha=0.5,
-                        label="Model Nodes (subsampled)",
-                    )
-            else:
-                original_nodes_to_plot = None
-        # Edge plotting was removed by user
-
-    if locs.shape[0] == 0:
-        if (
-            not object_model_instance
-        ):  # Only show this specific title if model also missing
-            ax.set_title(f"{title_prefix}: {obj_id} (No Hypotheses Data)")
-        # Otherwise, the title "(Model Graph Missing)" or plain obj_id title is already set
-        return
+        if nodes_for_scatter.shape[0] > 0:
+            ax.scatter(
+                nodes_for_scatter[:, 1],
+                nodes_for_scatter[:, 0],
+                nodes_for_scatter[:, 2],
+                c="grey",
+                s=2,
+                alpha=0.5,
+                label="Model",
+            )
 
     # Plot Hypotheses Scatter
     cmap = plt.cm.get_cmap("seismic")
@@ -174,18 +131,12 @@ def _plot_single_hypothesis_on_ax(
         colors_rgba[:, 3] = point_alphas_hyp
 
         ax.scatter(
-            locs_for_scatter[:, 1],  # Original Y to MPL X
-            locs_for_scatter[:, 0],  # Original X to MPL Y
-            locs_for_scatter[:, 2],  # Original Z to MPL Z
+            locs_for_scatter[:, 1],
+            locs_for_scatter[:, 0],
+            locs_for_scatter[:, 2],
             c=colors_rgba,
             s=point_sizes_hyp,  # Sizes based on evidence_for_scatter * 10
             alpha=None,  # Alpha is part of c=colors_rgba
-        )
-    elif (
-        locs_for_scatter.shape[0] > 0
-    ):  # Should be caught by the above if, but as a fallback print
-        print(
-            f"Warning: locs_for_scatter for {obj_id} has unexpected shape {locs_for_scatter.shape}"
         )
 
     ax.set_xlabel("Y")  # MPL X-axis now shows original Y
@@ -212,8 +163,7 @@ def _plot_single_hypothesis_mlh_on_ax(
     The object model is plotted in its local coordinates. The observed path
     (locations and normals) is transformed from world coordinates to the
     object's local coordinate frame using the Most Likely Hypothesis (MLH)
-    pose for the given obj_id. The origin of the object model is marked
-    with a red dot.
+    pose for the given obj_id.
 
     Args:
         ax: Matplotlib 3D axis.
@@ -232,129 +182,69 @@ def _plot_single_hypothesis_mlh_on_ax(
         title_prefix: Prefix for the plot title.
     """
     ax.clear()
-    model_subsampling_rate = 1
-
-    # Get MLH info directly
-    mlh_info = None
-    if hasattr(lm, "_calculate_most_likely_hypothesis"):
-        mlh_info = lm._calculate_most_likely_hypothesis(obj_id)
-    elif hasattr(
-        lm, "calculate_most_likely_hypothesis"
-    ):  # common pattern for public/private
-        mlh_info = lm.calculate_most_likely_hypothesis(obj_id)
-    else:
-        ax.set_title(f"{title_prefix}: {obj_id} (MLH Method Missing in LM)")
-        ax.axis("off")
-        return
-
-    if (
-        mlh_info is None
-        or mlh_info.get("rotation") is None
-        or mlh_info.get("location") is None
-    ):
-        ax.set_title(f"{title_prefix}: {obj_id} (MLH Data Missing or Incomplete)")
-        # Optionally plot model points even if MLH is missing, then return
-        # For now, just return to keep it clean if MLH is the focus.
-        ax.axis("off")
-        return
-
-    object_model_instance = lm.graph_memory.get_graph(obj_id, input_feature_channel)
 
     current_title = f"{title_prefix}: {obj_id}"
-    if not object_model_instance:
-        current_title += " (Model Graph Missing)"
     ax.set_title(current_title)
 
-    if object_model_instance:
-        graph_data_source = None
-        if hasattr(object_model_instance, "_graph"):
-            graph_data_source = object_model_instance._graph
-        elif hasattr(object_model_instance, "graph"):
-            graph_data_source = object_model_instance.graph
-        else:
-            graph_data_source = object_model_instance
+    # Get data from LM
+    mlh_info = lm._calculate_most_likely_hypothesis(obj_id)
+    object_model_instance = lm.graph_memory.get_graph(obj_id, input_feature_channel)
+    graph_data_source = object_model_instance._graph
+    nodes_for_scatter = np.array(graph_data_source.pos)
 
-        if hasattr(graph_data_source, "pos") and graph_data_source.pos is not None:
-            model_nodes_local = np.array(graph_data_source.pos)
-            if (
-                model_nodes_local.ndim == 2
-                and model_nodes_local.shape[0] > 0
-                and model_nodes_local.shape[1] == 3
-            ):
-                if (
-                    len(model_nodes_local) >= model_subsampling_rate
-                    and model_subsampling_rate > 0
-                ):
-                    nodes_for_scatter = model_nodes_local[::model_subsampling_rate]
-                else:
-                    nodes_for_scatter = model_nodes_local
+    if nodes_for_scatter.shape[0] > 0:
+        ax.scatter(
+            nodes_for_scatter[:, 1],
+            nodes_for_scatter[:, 0],
+            nodes_for_scatter[:, 2],
+            c="grey",
+            s=2,
+            alpha=0.5,
+            label="Model",
+        )
 
-                if nodes_for_scatter.shape[0] > 0:
-                    ax.scatter(
-                        nodes_for_scatter[:, 1],
-                        nodes_for_scatter[:, 0],
-                        nodes_for_scatter[:, 2],
-                        c="grey",
-                        s=2,
-                        alpha=0.5,
-                        label="Model Nodes (local frame)",
-                    )
-
-    # Construct the transformation based on MLH info
-    scipy_rotation_obj_to_world = mlh_info["rotation"]  # This is R_obj_to_world
-    # According to user, mlh_info["location"] is p_obj_anchor: a feature point in object's local frame
+    scipy_rotation_world_to_obj = mlh_info["rotation"]
     obj_frame_anchor_point = np.array(mlh_info["location"])
 
     # Transform and plot observed path if available
     if observed_locations_world is not None and len(observed_locations_world) > 0:
         obs_loc_world_np = np.array(observed_locations_world)
-        if obs_loc_world_np.ndim == 2 and obs_loc_world_np.shape[1] == 3:
-            scipy_rotation_world_to_obj = scipy_rotation_obj_to_world  # .inv()
+        # Assume the 'world_anchor_point' that corresponds to 'obj_frame_anchor_point'
+        # is the last observed location.
+        world_frame_anchor_point = obs_loc_world_np[-1]  # Taking the last point
 
-            # Assume the 'world_anchor_point' that corresponds to 'obj_frame_anchor_point'
-            # is the last observed location. This is a key assumption.
-            # If observed_locations_world is empty, this block won't run, which is fine.
-            world_frame_anchor_point = obs_loc_world_np[-1]  # Taking the last point
+        # Transform locations from world to object's local MLH frame
+        relative_world_vectors = obs_loc_world_np - world_frame_anchor_point
+        rotated_vectors = scipy_rotation_world_to_obj.apply(relative_world_vectors)
+        obs_loc_obj_frame = rotated_vectors + obj_frame_anchor_point
 
-            # Transform locations from world to object's local MLH frame
-            # p_o = R_w2o @ (p_w - p_world_anchor) + p_obj_anchor
-            relative_world_vectors = obs_loc_world_np - world_frame_anchor_point
-            rotated_vectors = scipy_rotation_world_to_obj.apply(relative_world_vectors)
-            obs_loc_obj_frame = rotated_vectors + obj_frame_anchor_point
+        ax.scatter(
+            obs_loc_obj_frame[:, 1],
+            obs_loc_obj_frame[:, 0],
+            obs_loc_obj_frame[:, 2],
+            c="blue",
+            s=20,
+            label="Observed Path (obj frame)",
+            alpha=0.7,
+        )
 
-            ax.scatter(
-                obs_loc_obj_frame[:, 1],  # Original Y to MPL X
-                obs_loc_obj_frame[:, 0],  # Original X to MPL Y
-                obs_loc_obj_frame[:, 2],  # Original Z to MPL Z
-                c="blue",
-                s=20,
-                label="Observed Path (obj frame)",
-                alpha=0.7,
-            )
+        # Plot observed normals if available
+        obs_norm_world_np = np.array(observed_normals_world)
+        obs_norm_obj_frame = scipy_rotation_world_to_obj.apply(obs_norm_world_np)
 
-            if observed_normals_world is not None and len(
-                observed_normals_world
-            ) == len(observed_locations_world):
-                obs_norm_world_np = np.array(observed_normals_world)
-                if obs_norm_world_np.ndim == 2 and obs_norm_world_np.shape[1] == 3:
-                    # Transform normals from world to object's local MLH frame by rotation only
-                    obs_norm_obj_frame = scipy_rotation_world_to_obj.apply(
-                        obs_norm_world_np
-                    )
-
-                    ax.quiver(
-                        obs_loc_obj_frame[:, 1],  # Original Y to MPL X
-                        obs_loc_obj_frame[:, 0],  # Original X to MPL Y
-                        obs_loc_obj_frame[:, 2],  # Original Z to MPL Z
-                        obs_norm_obj_frame[:, 1],  # Normal Y component
-                        obs_norm_obj_frame[:, 0],  # Normal X component
-                        obs_norm_obj_frame[:, 2],  # Normal Z component
-                        length=0.05,
-                        normalize=True,
-                        color="green",
-                        label="Observed Normals (obj frame)",
-                        alpha=0.7,
-                    )
+        ax.quiver(
+            obs_loc_obj_frame[:, 1],  # Original Y to MPL X
+            obs_loc_obj_frame[:, 0],  # Original X to MPL Y
+            obs_loc_obj_frame[:, 2],  # Original Z to MPL Z
+            obs_norm_obj_frame[:, 1],  # Normal Y component
+            obs_norm_obj_frame[:, 0],  # Normal X component
+            obs_norm_obj_frame[:, 2],  # Normal Z component
+            length=0.05,
+            normalize=True,
+            color="green",
+            label="Observed Normals (obj frame)",
+            alpha=0.7,
+        )
 
     ax.set_xlabel("Y (object local frame)")
     ax.set_ylabel("X (object local frame)")
@@ -378,33 +268,17 @@ def plot_hypothesis_space(
     observed_patch_locations: Optional[np.ndarray] = None,
     observed_patch_normals: Optional[np.ndarray] = None,
 ):
-    """Plots hypothesis space using data directly from EvidenceGraphLM."""
-
-    if not isinstance(h_ax1, Axes3D):
-        _fig.delaxes(h_ax1)
-        h_ax1 = _fig.add_subplot(
-            h_ax1.get_gridspec().rowspan.start + 1,
-            h_ax1.get_gridspec().colspan.start + 1,
-            h_ax1.get_gridspec().num1,
-            projection="3d",
-        )
-    if not isinstance(h_ax2, Axes3D):
-        _fig.delaxes(h_ax2)
-        h_ax2 = _fig.add_subplot(
-            h_ax2.get_gridspec().rowspan.start + 1,
-            h_ax2.get_gridspec().colspan.start + 1,
-            h_ax2.get_gridspec().num1,
-            projection="3d",
-        )
+    """Plots hypothesis of most likely objects."""
 
     current_mlh_info = lm.get_current_mlh()
     possible_matches = lm.get_possible_matches()
 
     top_mlh_obj_id, second_mlh_obj_id = lm.get_top_two_mlh_ids()
+    # Overwriting the second MLH to potted_meat_can for debugging
     second_mlh_obj_id = "potted_meat_can"
 
     if focus_on_mlh:
-        print(f"focus_on_mlh: {focus_on_mlh}")
+        # Shows the most likely pose on the object (+sensed path)
         _plot_single_hypothesis_mlh_on_ax(
             h_ax1,
             top_mlh_obj_id,
@@ -412,7 +286,7 @@ def plot_hypothesis_space(
             input_feature_channel,
             observed_locations_world=observed_patch_locations,
             observed_normals_world=observed_patch_normals,
-            title_prefix="MLH Focus (Top)",
+            title_prefix="Most Likely Hypothesis",
         )
         _plot_single_hypothesis_mlh_on_ax(
             h_ax2,
@@ -421,9 +295,10 @@ def plot_hypothesis_space(
             input_feature_channel,
             observed_locations_world=observed_patch_locations,
             observed_normals_world=observed_patch_normals,
-            title_prefix="Object View (2nd)",
+            title_prefix="2nd Object",
         )
     else:
+        # Shows all hypotheses on the object
         _plot_single_hypothesis_on_ax(
             h_ax1,
             top_mlh_obj_id,
@@ -445,7 +320,6 @@ def plot_hypothesis_space(
     h_ax3.clear()
     h_ax3.axis("off")
 
-    # 1. Overall MLH (More Prominent and First)
     mlh_display_id = current_mlh_info.get("graph_id", "N/A")
     mlh_display_evidence = current_mlh_info.get("evidence", float("nan"))
     mlh_text = (
@@ -463,34 +337,20 @@ def plot_hypothesis_space(
         linespacing=1.5,
     )
 
-    # 2. Possible Objects (Wrapped)
-    current_y_pos = 0.75  # Adjust Y position for the next block of text
-    if possible_matches:
-        # Indent each object and put on a new line
-        possible_objects_str = "Possible:\n" + "\n".join(
-            [f"   {obj}" for obj in possible_matches]
-        )
-        h_ax3.text(
-            0.05,
-            current_y_pos,
-            possible_objects_str,  # Use the directly formatted string
-            ha="left",
-            va="top",
-            fontsize=9,
-            transform=h_ax3.transAxes,
-            linespacing=1.5,
-        )
-    else:
-        h_ax3.text(
-            0.05,
-            current_y_pos,
-            "Possible: None or Undetermined",
-            ha="left",
-            va="top",
-            fontsize=9,
-            transform=h_ax3.transAxes,
-            linespacing=1.5,
-        )
+    current_y_pos = 0.75
+    possible_objects_str = "Possible:\n" + "\n".join(
+        [f"   {obj}" for obj in possible_matches]
+    )
+    h_ax3.text(
+        0.05,
+        current_y_pos,
+        possible_objects_str,  # Use the directly formatted string
+        ha="left",
+        va="top",
+        fontsize=9,
+        transform=h_ax3.transAxes,
+        linespacing=1.5,
+    )
 
 
 def plot_patch_with_features(
@@ -543,27 +403,19 @@ def plot_patch_with_features(
 
     # Plot column points
     if all_column_points_tuples and len(all_column_points_tuples) > 0:
-        if isinstance(all_column_points_tuples, list):
-            points = np.array(all_column_points_tuples)
-        else:
-            points = all_column_points_tuples
-
-        if points.size > 0:
-            if points.ndim == 1:
-                ax2.scatter([points[0]], [points[1]], c="r", s=1)
-            else:
-                ax2.scatter(points[:, 0], points[:, 1], c="r", s=1)
-            legend_elements.append(
-                plt.Line2D(
-                    [0],
-                    [0],
-                    marker="o",
-                    color="w",
-                    markerfacecolor="r",
-                    markersize=5,
-                    label="Column Points",
-                )
+        points = np.array(all_column_points_tuples)
+        ax2.scatter(points[:, 0], points[:, 1], c="r", s=1)
+        legend_elements.append(
+            plt.Line2D(
+                [0],
+                [0],
+                marker="o",
+                color="w",
+                markerfacecolor="r",
+                markersize=5,
+                label="Points on Edge",
             )
+        )
 
     if center_edge_point is not None:
         ax2.scatter(center_edge_point[0], center_edge_point[1], c="g", s=50)
@@ -621,73 +473,46 @@ def plot_patch_with_features(
         ax2.legend(handles=legend_elements, loc="upper right")
     ax2.axis("off")
 
-    if observed_locations and len(observed_locations) > 0:
-        locations_np = np.array(observed_locations)
-        if locations_np.ndim == 2 and locations_np.shape[1] == 3:
-            x = locations_np[:, 1]
-            y = locations_np[:, 0]
-            z = locations_np[:, 2]
-            ax3.scatter(x, y, z, c="b", marker="o", s=10, label="Observed Locations")
-            if normal_rel_world and len(normal_rel_world) == len(observed_locations):
-                normals_np = np.array(normal_rel_world)
-                if normals_np.ndim == 2 and normals_np.shape[1] == 3:
-                    u = normals_np[:, 1]
-                    v = normals_np[:, 0]
-                    w = normals_np[:, 2]
-                    ax3.quiver(
-                        x,
-                        y,
-                        z,
-                        u,
-                        v,
-                        w,
-                        length=0.1,
-                        normalize=True,
-                        color="r",
-                        label="World Normals",
-                    )
-            ax3.set_xlabel("X (world)")
-            ax3.set_ylabel("Y (world)")
-            ax3.set_zlabel("Z (world)")
-            ax3.set_title("Observed Patch Locations")
-            if len(x) > 1:
-                ax3.set_xlim([np.min(x) - 0.1, np.max(x) + 0.1])
-                ax3.set_ylim([np.min(y) - 0.1, np.max(y) + 0.1])
-                ax3.set_zlim([np.min(z) - 0.1, np.max(z) + 0.1])
-            elif len(x) == 1:
-                ax3.set_xlim([x[0] - 0.5, x[0] + 0.5])
-                ax3.set_ylim([y[0] - 0.5, y[0] + 0.5])
-                ax3.set_zlim([z[0] - 0.5, z[0] + 0.5])
-            ax3.view_init(elev=20.0, azim=-35)
-            ax3.grid(True)
-            ax3.set_xticks([])
-            ax3.set_yticks([])
-            ax3.set_zticks([])
-        else:
-            ax3.text(
-                0.5,
-                0.5,
-                0.5,
-                "Invalid location data format.",
-                horizontalalignment="center",
-                verticalalignment="center",
-                transform=ax3.transAxes,
+    locations_np = np.array(observed_locations)
+    x = locations_np[:, 1]
+    y = locations_np[:, 0]
+    z = locations_np[:, 2]
+    ax3.scatter(x, y, z, c="b", marker="o", s=10, label="Observed Locations")
+    if normal_rel_world and len(normal_rel_world) == len(observed_locations):
+        normals_np = np.array(normal_rel_world)
+        if normals_np.ndim == 2 and normals_np.shape[1] == 3:
+            u = normals_np[:, 1]
+            v = normals_np[:, 0]
+            w = normals_np[:, 2]
+            ax3.quiver(
+                x,
+                y,
+                z,
+                u,
+                v,
+                w,
+                length=0.1,
+                normalize=True,
+                color="r",
+                label="World Normals",
             )
-    else:
-        ax3.text(
-            0.5,
-            0.5,
-            0.5,
-            "No locations observed yet.",
-            horizontalalignment="center",
-            verticalalignment="center",
-            transform=ax3.transAxes,
-        )
-        ax3.set_xlabel("X (world)")
-        ax3.set_ylabel("Y (world)")
-        ax3.set_zlabel("Z (world)")
-        ax3.set_title("Observed Patch Locations")
-    # No figure management (save, tight_layout, draw, flush, pause) here.
+    ax3.set_xlabel("X (world)")
+    ax3.set_ylabel("Y (world)")
+    ax3.set_zlabel("Z (world)")
+    ax3.set_title("Observed Patch Locations")
+    if len(x) > 1:
+        ax3.set_xlim([np.min(x) - 0.1, np.max(x) + 0.1])
+        ax3.set_ylim([np.min(y) - 0.1, np.max(y) + 0.1])
+        ax3.set_zlim([np.min(z) - 0.1, np.max(z) + 0.1])
+    elif len(x) == 1:
+        ax3.set_xlim([x[0] - 0.5, x[0] + 0.5])
+        ax3.set_ylim([y[0] - 0.5, y[0] + 0.5])
+        ax3.set_zlim([z[0] - 0.5, z[0] + 0.5])
+    ax3.view_init(elev=20.0, azim=-35)
+    ax3.grid(True)
+    ax3.set_xticks([])
+    ax3.set_yticks([])
+    ax3.set_zticks([])
 
 
 def plot_combined_figure(
@@ -706,14 +531,13 @@ def plot_combined_figure(
     lm_instance: EvidenceGraphLM = None,
     hypothesis_input_channel="patch",
     hypothesis_evidence_threshold=-np.inf,
-    hypothesis_ax_range=0.2,
-    hypothesis_view_elev=30,
-    hypothesis_view_azim=-60,
     display_mlh_focus_plot: bool = False,
 ):
     """Manages the overall figure and calls plotting functions for different sections.
+
     The first row always shows the input image, patch features, and observed locations.
     The second row (optional) shows hypothesis space visualizations.
+
     Args:
         input_image: The full input image.
         patch_image: The extracted patch.
@@ -730,9 +554,6 @@ def plot_combined_figure(
         lm_instance: EvidenceGraphLM instance for hypothesis space plotting.
         hypothesis_input_channel: Input feature channel for hypothesis space plotting.
         hypothesis_evidence_threshold: Evidence threshold for hypothesis space plotting.
-        hypothesis_ax_range: Axis range for hypothesis space plotting.
-        hypothesis_view_elev: Elevation for hypothesis space plotting.
-        hypothesis_view_azim: Azimuth for hypothesis space plotting.
         display_mlh_focus_plot: If True and show_hypothesis_space is True,
                                 the hypothesis plots will focus on the MLH object view
                                 with transformed observed path. Defaults to False.
@@ -807,14 +628,12 @@ def plot_combined_figure(
             observed_patch_normals=normal_rel_world,
         )
 
-    plt.tight_layout(
-        pad=1.5, h_pad=2.0, w_pad=1.0
-    )  # Apply tight layout to the whole figure
+    plt.tight_layout(pad=1.5, h_pad=2.0, w_pad=1.0)
 
     if save_path:
         plt.savefig(save_path, bbox_inches="tight", dpi=300)
 
-    if _fig:  # Ensure figure exists
+    if _fig:
         _fig.canvas.draw()
         _fig.canvas.flush_events()
         plt.pause(0.1)  # Short pause to allow plot to update

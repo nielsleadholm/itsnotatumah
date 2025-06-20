@@ -127,15 +127,6 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                         hypothesis_evidence_threshold=self.plotting_config.get(
                             "hypothesis_evidence_threshold", -np.inf
                         ),
-                        hypothesis_ax_range=self.plotting_config.get(
-                            "hypothesis_ax_range", 0.2
-                        ),
-                        hypothesis_view_elev=self.plotting_config.get(
-                            "hypothesis_view_elev", 30
-                        ),
-                        hypothesis_view_azim=self.plotting_config.get(
-                            "hypothesis_view_azim", -60
-                        ),
                         display_mlh_focus_plot=self.plotting_config.get(
                             "display_mlh_focus_plot", False
                         ),
