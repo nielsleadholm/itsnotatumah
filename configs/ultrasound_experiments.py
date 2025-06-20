@@ -158,10 +158,7 @@ base_ultrasound_experiment = {
         "transform": None,
     },
     "eval_dataloader_class": UltrasoundDataLoader,
-    "eval_dataloader_args": {
-        "patch_size": 256,
-        "top_skip": 0,  # TODO: remove top_skip parameter
-    },
+    "eval_dataloader_args": {"patch_size": 256},
 }
 
 json_dataset_ultrasound_experiment = deepcopy(base_ultrasound_experiment)
@@ -176,10 +173,7 @@ json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
         os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"
     ),
 }
-json_dataset_ultrasound_experiment["eval_dataloader_args"] = {
-    "patch_size": 256,
-    "top_skip": 0,
-}
+json_dataset_ultrasound_experiment["eval_dataloader_args"] = {"patch_size": 256}
 
 
 LM_config_for_learning = {
@@ -220,10 +214,7 @@ json_dataset_ultrasound_learning.update(
             },
         },
         "train_dataloader_class": UltrasoundDataLoader,
-        "train_dataloader_args": {
-            "patch_size": 256,
-            "top_skip": 0,
-        },
+        "train_dataloader_args": {"patch_size": 256},
     }
 )
 json_dataset_ultrasound_learning["monty_config"]["learning_module_configs"] = (
