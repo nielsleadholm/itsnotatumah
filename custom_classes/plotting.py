@@ -6,7 +6,6 @@ This module provides functions to visualize:
 - Evidence plots for object hypotheses
 """
 
-import textwrap  # Added for text wrapping
 from typing import Optional  # Added for compatibility with Python < 3.10
 
 import matplotlib.colors
