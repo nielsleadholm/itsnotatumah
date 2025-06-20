@@ -21,7 +21,7 @@ from tbp.monty.frameworks.environments.two_d_data import (
 
 
 class UltrasoundActionSpace(tuple, ActionSpace):
-    """Action space for 2D data environments."""
+    """Action space placeholder (Monty doesn't act here)."""
 
     def sample(self):
         return self.rng.choice(self)
@@ -67,7 +67,7 @@ class UltrasoundEnvironment(EmbodiedEnvironment):
         """Retrieve the next observation.
 
         Args:
-            action: next: load the next image + tracking data.
+            action: load the next image + tracking data.
 
         Returns:
             observation (dict).
@@ -198,7 +198,7 @@ class JSONDatasetUltrasoundEnvironment(UltrasoundEnvironment):
         """Retrieve the next observation.
 
         Args:
-            action: next: load the next image + tracking data.
+            action: unused. We just load the next data point in the dataset.
 
         Returns:
             observation (dict).
@@ -211,10 +211,12 @@ class JSONDatasetUltrasoundEnvironment(UltrasoundEnvironment):
 
     def load_next_data_point(self):
         """Load the next ultrasound image from the dataset."""
+        # TODO: If there is no next image for step_count, end the episode.
         with open(os.path.join(self.data_path, f"{self.step_count}.json"), "r") as f:
             data = json.load(f)
 
         self.full_image = np.array(data["obs"]["agent_id_0"]["ultrasound"]["img"])
+        # Overwrite the position of the probe.
         # TODO: can remove this now that it is added to the ProbeTriggeredUltrasoundEnvironment
         # (If used during data collection)
         # TODO: this just looked like it gave the best results but it is not ideal yet.

@@ -8,7 +8,6 @@
 # https://opensource.org/licenses/MIT.
 import copy
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial.transform import Rotation
 from tbp.monty.frameworks.environments.embodied_data import (
@@ -100,11 +99,14 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         Args:
             full_image (np.ndarray): The full ultrasound image of shape (N, M)
             patch_size (int): Size of the square patch to extract
-
+            grid_size (int): Number of bins to group the pixel values into along each
+                dimension of the patch for calculating the mean intensity.
+            window_size (int): Size of the window to calculate the local mean and std
+                of the gradient.
         Returns:
             tuple: (patch, location) where:
                 - patch (np.ndarray): The first patch with significant horizontal edge
-                - location (tuple): (y, x) coordinates of the patch center
+                - location (tuple): (y, x) pixel coordinates of the patch center
         """
         height, width = full_image.shape
         x_center = width // 2
@@ -288,10 +290,10 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         Args:
             img: The input ultrasound image
             pixel_location: Tuple of (y, x) coordinates
-            max_depth: Maximum depth in cm
+            max_depth: Depth setting of the ultrasound probe
 
         Returns:
-            float: Estimated depth in cm
+            float: Estimated depth of patch in meters
         """
         depth_perc = pixel_location[0] / img.shape[0]
         depth_cm = depth_perc * max_depth
