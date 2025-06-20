@@ -35,6 +35,10 @@ from tbp.monty.simulators.habitat.configs import (
 
 from .config_utils import import_config_from_monty
 
+# Experiments for testing on the robot lab dataset in simulation. These results can be
+# used to compare to the results from the ultrasound experiments. For more details see
+# https://github.com/thousandbrainsproject/monty_lab/tree/main/tbp_robot_lab
+
 pretrained_dir = import_config_from_monty("defaults.py", "pretrained_dir")
 
 # A set of objects that can be obtained internationally and used to test Monty's

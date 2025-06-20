@@ -21,7 +21,6 @@ from tbp.monty.frameworks.config_utils.policy_setup_utils import (
     make_informed_policy_config,
 )
 from tbp.monty.frameworks.environments.embodied_data import EnvironmentDataset
-from tbp.monty.frameworks.environments.ycb import DISTINCT_OBJECTS
 from tbp.monty.frameworks.models.displacement_matching import DisplacementGraphLM
 from tbp.monty.frameworks.models.evidence_matching.learning_module import (
     EvidenceGraphLM,
@@ -51,6 +50,8 @@ from custom_classes.sensor_module import UltrasoundSM
 
 from .config_utils import import_config_from_monty
 
+# Ultrasound experiments can use the models trained in simulation when inferring objects
+# in the real world.
 pretrained_dir = import_config_from_monty("defaults.py", "pretrained_dir")
 model_path_tbp_robot_lab = os.path.join(
     pretrained_dir,
@@ -90,6 +91,8 @@ default_evidence_lm_config = {
 
 num_pretrain_steps = 184
 
+# Base experiment for experimenting. This isns't really used anymore beside for the
+# other experiments to inherit from.
 base_ultrasound_experiment = {
     "experiment_class": UltrasoundExperiment,
     "experiment_args": EvalExperimentArgs(
@@ -161,6 +164,9 @@ base_ultrasound_experiment = {
     "eval_dataloader_args": {"patch_size": 256},
 }
 
+# Experiment for testing offline on a dataset that was collected with the ultrasound
+# probe and saved to JSON files. Can be used to experiment without having the whole
+# ultrasounds and tracking set up and for repeatable experiments.
 json_dataset_ultrasound_experiment = deepcopy(base_ultrasound_experiment)
 json_dataset_ultrasound_experiment["dataset_args"]["env_init_func"] = (
     JSONDatasetUltrasoundEnvironment
@@ -173,9 +179,8 @@ json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
         os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"
     ),
 }
-json_dataset_ultrasound_experiment["eval_dataloader_args"] = {"patch_size": 256}
 
-
+# For learning we use the DisplacementGraphLM.
 LM_config_for_learning = {
     "learning_module_0": {
         "learning_module_class": DisplacementGraphLM,
@@ -193,11 +198,11 @@ LM_config_for_learning = {
         },
     }
 }
+# Loads an offline .json dataset and trains models on it.
 json_dataset_ultrasound_learning = deepcopy(json_dataset_ultrasound_experiment)
 json_dataset_ultrasound_learning.update(
     {
         "experiment_args": EvalExperimentArgs(
-            # model_name_or_path=model_path_tbp_robot_lab,
             do_train=True,
             do_eval=False,
             n_train_epochs=1,
