@@ -79,7 +79,7 @@ default_evidence_lm_config = {
         "hypotheses_updater_args": {"max_nneighbors": 10},
         # Use this to update all hypotheses with evidence > 80% of max evidence (faster)
         "evidence_update_threshold": "80%",
-        "use_multithreading": False,  # TODO: comment out again after debugging
+        "use_multithreading": False,  # NOTE: could set to True when not debugging
         # NOTE: Currently not used when loading pretrained graphs.
         "max_graph_size": 0.3,  # 30cm
         "num_model_voxels_per_dim": 100,
