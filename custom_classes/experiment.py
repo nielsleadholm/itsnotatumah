@@ -2,7 +2,7 @@
 
 import os
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 import numpy as np
 from tbp.monty.frameworks.experiments import MontyObjectRecognitionExperiment
@@ -74,9 +74,6 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                 agent_id = self.model.motor_system._policy.agent_id
                 # Get input image and patch from the patch sensor
                 patch_data = observation[agent_id]["patch"]
-
-                input_image = patch_data["img"]
-                patch_image = patch_data["img"]
                 depth = patch_data["patch_depth"]
 
                 # Get features from the sensor module
@@ -95,11 +92,8 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                     if features.get("principal_curvatures") is not None
                     else 0
                 )
-                depth_meters = features.get(
-                    "mean_depth", depth
-                )  # Fallback to patch_depth if not in features
+                depth_meters = features.get("mean_depth", depth)
 
-                # Determine save path if enabled
                 save_path = None
                 if self.plotting_config.get("save_path"):
                     os.makedirs(self.plotting_config["save_path"], exist_ok=True)
@@ -110,14 +104,6 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                 # Plot based on config
                 if self.plotting_config.get("plot_patch_features", False):
                     full_image = self.dataloader.dataset.env.get_full_image()
-
-                    # Convert to numpy array if needed
-                    if not isinstance(full_image, np.ndarray):
-                        try:
-                            full_image = np.array(full_image, dtype=np.float32)
-                        except Exception as e:
-                            print(f"Error converting image to numpy array: {e}")
-                            full_image = patch_data["img"]  # Fallback to patch image
 
                     plot_combined_figure(
                         input_image=full_image,
@@ -134,9 +120,7 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                         show_hypothesis_space=self.plotting_config.get(
                             "show_hypothesis_space", False
                         ),
-                        lm_instance=self.model.learning_modules[0]
-                        if self.model.learning_modules
-                        else None,
+                        lm_instance=self.model.learning_modules[0],
                         hypothesis_input_channel=self.plotting_config.get(
                             "hypothesis_input_channel", "patch"
                         ),
@@ -157,10 +141,7 @@ class UltrasoundExperiment(MontyObjectRecognitionExperiment):
                         ),
                     )
 
-            # Regular experiment step logic
-            if self.show_sensor_output:
-                self.show_observations(observation, loader_step)
-
+            # Check if episode should terminate
             if self.model.check_reached_max_matching_steps(self.max_steps):
                 return loader_step
 
