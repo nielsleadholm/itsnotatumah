@@ -204,6 +204,8 @@ class JSONDatasetUltrasoundEnvironment(UltrasoundEnvironment):
             observation (dict).
         """
         self.current_ultrasound_image, self.current_state = self.load_next_data_point()
+        if self.current_ultrasound_image is None:
+            return None
 
         obs = self.current_ultrasound_image
         self.step_count += 1
@@ -211,9 +213,14 @@ class JSONDatasetUltrasoundEnvironment(UltrasoundEnvironment):
 
     def load_next_data_point(self):
         """Load the next ultrasound image from the dataset."""
-        # TODO: If there is no next image for step_count, end the episode.
-        with open(os.path.join(self.data_path, f"{self.step_count}.json"), "r") as f:
-            data = json.load(f)
+        try:
+            with open(
+                os.path.join(self.data_path, f"{self.step_count}.json"), "r"
+            ) as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            # This will end the episode
+            return None, None
 
         self.full_image = np.array(data["obs"]["agent_id_0"]["ultrasound"]["img"])
         # Overwrite the position of the probe.

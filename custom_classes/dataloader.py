@@ -49,6 +49,8 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
 
     def __next__(self):
         self._observation, proprioceptive_state = self.dataset[None]
+        if self._observation is None:
+            raise StopIteration
         self.motor_system._state = (
             MotorSystemState(proprioceptive_state) if proprioceptive_state else None
         )

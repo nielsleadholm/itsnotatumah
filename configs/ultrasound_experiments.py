@@ -98,7 +98,7 @@ base_ultrasound_experiment = {
     "experiment_args": EvalExperimentArgs(
         model_name_or_path=model_path_tbp_robot_lab,
         n_eval_epochs=1,
-        max_eval_steps=num_pretrain_steps,
+        max_eval_steps=200,
     ),
     "logging_config": ParallelEvidenceLMLoggingConfig(
         wandb_group="benchmark_experiments",
@@ -119,7 +119,7 @@ base_ultrasound_experiment = {
     "monty_config": {
         "monty_class": MontyForEvidenceGraphMatching,
         "monty_args": MontyArgs(
-            min_eval_steps=num_pretrain_steps - 1,
+            min_eval_steps=20,
             num_exploratory_steps=num_pretrain_steps,
         ),
         "learning_module_configs": {"learning_module_0": default_evidence_lm_config},
