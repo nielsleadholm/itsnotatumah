@@ -81,6 +81,14 @@ python run.py -e probe_triggered_data_collection_experiment
 
 TODO: add instructions on setting up the online experiment.
 
+## Learn More!
+
+You can find more information on how we customized Monty for this usecase in the writeup [here](./custom_classes/How_Monty_is_Customized.md).
+
+TODO: Link to writeup on iPad app & streaming pipeline
+TODO: Link to our docs showcase
+TODO: Link to YouTube videos
+
 ## Development
 
 After installing the environment, you can run the following commands to check your code.
