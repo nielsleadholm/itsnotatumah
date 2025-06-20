@@ -50,10 +50,29 @@ After installing the environment, to run an experiment, run:
 python run.py -e <experiment_name>
 ```
 
-To run an experiment where episodes are executed in parallel, run:
-
+To run training on an offline ultrasound dataset (.json files) run:
 ```bash
-python run_parallel.py -e <experiment_name> -n <num_parallel>
+python run.py -e json_dataset_ultrasound_learning
+```
+
+Make sure the `data_path` in `env_init_args` of the `json_dataset_ultrasound_learning` config points to your dataset.
+
+TODO: Add instructions for downloading dataset.
+
+To run inference on an offline ultrasound dataset (.json files) run:
+```bash
+python run.py -e json_dataset_ultrasound_experiment
+```
+(again, making sure the `data_path` points to your dataset)
+
+To run an interactive, live Ultrasound experiment, run:
+```bash
+python run.py -e probe_triggered_experiment
+```
+
+To run a live Ultrasound experiment to collect a new .json dataset, run:
+```bash
+python run.py -e probe_triggered_data_collection_experiment
 ```
 
 ## Development
