@@ -50,6 +50,8 @@ After installing the environment, to run an experiment, run:
 python run.py -e <experiment_name>
 ```
 
+### Offline Experiments
+
 To run training on an offline ultrasound dataset (.json files) run:
 ```bash
 python run.py -e json_dataset_ultrasound_learning
@@ -65,6 +67,8 @@ python run.py -e json_dataset_ultrasound_experiment
 ```
 (again, making sure the `data_path` points to your dataset)
 
+### Online Experiments
+
 To run an interactive, live Ultrasound experiment, run:
 ```bash
 python run.py -e probe_triggered_experiment
@@ -74,6 +78,8 @@ To run a live Ultrasound experiment to collect a new .json dataset, run:
 ```bash
 python run.py -e probe_triggered_data_collection_experiment
 ```
+
+TODO: add instructions on setting up the online experiment.
 
 ## Development
 
