@@ -43,7 +43,7 @@ class UltrasoundEnvironment(EmbodiedEnvironment):
         self.current_scene = 0
         self.step_count = 0
 
-        # Just for compatibility. TODO: find cleaner way to do this.
+        # Just for compatibility.
         self._agents = [
             type(
                 "FakeAgent",

@@ -101,9 +101,6 @@ base_ultrasound_experiment = {
         wandb_group="benchmark_experiments",
         # Comment in for quick debugging (turns of wandb and increases logging)
         wandb_handlers=[],
-        # TODO: monty_experiment.py logger_args only defined target of dataloader is
-        # instance of EnvironmentDataLoaderPerObject so the current monty logger doesn't
-        # work if it is not.
         monty_handlers=[],
         monty_log_level="SILENT",
         python_log_level="DEBUG",
@@ -210,7 +207,6 @@ json_dataset_ultrasound_learning.update(
             do_train=True,
             do_eval=False,
             n_train_epochs=1,
-            # TODO: weird that we have to set both of those + num_exploratory_steps
             max_total_steps=num_pretrain_steps,
             max_train_steps=num_pretrain_steps,
         ),
