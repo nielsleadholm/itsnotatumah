@@ -82,7 +82,9 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         )
         observation["agent_id_0"]["patch"] = {}
         observation["agent_id_0"]["patch"]["img"] = patch
-        observation["agent_id_0"]["patch"]["patch_depth"] = patch_depth
+        observation["agent_id_0"]["patch"]["patch_depth"] = (
+            0  # Temporarily set to 0 for debugging
+        )
         # remove the ultrasound image from the observation
         del observation["agent_id_0"]["ultrasound"]
         return observation
@@ -106,9 +108,9 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
             window_size (int): Size of the window to calculate the local mean and std
                 of the gradient.
         Returns:
-            tuple: (patch, location) where:
+            tuple: (patch, depth) where:
                 - patch (np.ndarray): The first patch with significant horizontal edge
-                - location (tuple): (y, x) pixel coordinates of the patch center
+                - depth (float): The depth of the patch in meters
         """
         height, width = full_image.shape
         x_center = width // 2

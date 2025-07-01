@@ -215,31 +215,34 @@ class UltrasoundSM(SensorModuleBase):
                   representing the surface normal in the image plane (e.g., [nx, ny, 0]),
                   and curvature is a float representing the local curvature.
         """
-        # Get points on the first edge (from top) in the image
-        all_column_points_tuples, center_edge_point = self.extract_edge_points(patch)
-        all_column_points_np = np.array(all_column_points_tuples)
+        # # Get points on the first edge (from top) in the image
+        # all_column_points_tuples, center_edge_point = self.extract_edge_points(patch)
+        # all_column_points_np = np.array(all_column_points_tuples)
 
-        # Store data for plotting
-        self.plotting_data["column_points"] = all_column_points_tuples
-        self.plotting_data["center_edge"] = center_edge_point
+        # # Store data for plotting
+        # self.plotting_data["column_points"] = all_column_points_tuples
+        # self.plotting_data["center_edge"] = center_edge_point
 
-        # Fit a circle to the edge points and calculate curvature
-        fit_params, curvature = self.fit_circle_to_points(
-            patch, all_column_points_np, center_edge_point
-        )
+        # # Fit a circle to the edge points and calculate curvature
+        # fit_params, curvature = self.fit_circle_to_points(
+        #     patch, all_column_points_np, center_edge_point
+        # )
 
-        # Store circle fit parameters for plotting if available
-        if fit_params is not None and not fit_params.get("is_line", True):
-            self.plotting_data["fitted_circle"] = (
-                fit_params["center"][0],
-                fit_params["center"][1],
-                fit_params["radius"],
-            )
-        else:
-            self.plotting_data["fitted_circle"] = None
+        # # Store circle fit parameters for plotting if available
+        # if fit_params is not None and not fit_params.get("is_line", True):
+        #     self.plotting_data["fitted_circle"] = (
+        #         fit_params["center"][0],
+        #         fit_params["center"][1],
+        #         fit_params["radius"],
+        #     )
+        # else:
+        #     self.plotting_data["fitted_circle"] = None
 
-        # Calculate the normal vector based on the fitted curve
-        normal_3d = self.calculate_normal_from_fit(fit_params, center_edge_point)
+        # # Calculate the normal vector based on the fitted curve
+        # normal_3d = self.calculate_normal_from_fit(fit_params, center_edge_point)
+
+        normal_3d = np.array([0.0, -1.0, 0.0])
+        curvature = 0.0
 
         return normal_3d, curvature
 
