@@ -80,7 +80,7 @@ class ProbeTriggeredUltrasoundEnvironment(UltrasoundEnvironment):
                 "sensors": {
                     "ultrasound": {
                         "rotation": qt.quaternion(1, 0, 0, 0),  # Identity quaternion
-                        "position": np.array([0, 0.03, 0.095]),
+                        "position": np.array([0, 0.029, 0.084]),
                     },
                 },
                 "rotation": agent_rotation,
@@ -109,6 +109,7 @@ class ProbeTriggeredUltrasoundEnvironment(UltrasoundEnvironment):
         try:
             print(f"Getting vive pose for epoch: {epoch}")
             response = requests.get(f"{self.vive_url}?epoch={epoch}")
+            print(f"Pose response: {response.json()}")
             if not 200 <= response.status_code < 300:
                 return None
             return response.json()["data"]
