@@ -15,7 +15,7 @@ then stream this via a server to the Mac that is running a Monty experiment.
 ## Steps
 
 ### Background Setup
-- Install the latest version of Steam
+- On the Windows PC, install the latest version of Steam
 - In the Steam app, install SteamVR (~5 GB)
     - After installation, launch SteamVR at least once to ensure it’s set up (you’ll see the VR status window, which will likely complain about no headset – we will address that soon).
 - Setup a Python environment on your Windows computer, e.g. with Miniconda
@@ -26,11 +26,11 @@ then stream this via a server to the Mac that is running a Monty experiment.
 
 ### Setup Base Stations
 - Plug in the base stations to power them on, and ensure they can see where the HTC Vive Tracker will be positioned
-    - Note these serve as waypoints for the Tracker to detect, but they do not need to WiFi or Bluetooth connect to the PC or the Tracker itself - they are simply used as prominent signal sources for the Tracker, and so they only need a power source
+    - Note these serve as waypoints for the Tracker to detect, but they do not need WiFi or Bluetooth to connect to the PC or the Tracker itself - they are simply used as prominent signal sources for the Tracker, and so they only need a power source
 
 
 ### Configuring SteamVR for Headset-Free Operation
-By default, SteamVR expects a VR headset to be connected. We need to tweak some settings to run SteamVR in “headless” or no-HMD mode so that it will track just our base stations and tracker. Most of the below instructions are based on [the post here](https://www.notion.so/yeove/Using-SteamVR-without-a-VR-headset-f7ed4268708a42c787d1628768e61d35).
+By default, SteamVR expects a VR headset to be connected. We need to tweak some settings to run SteamVR in “headless” or no-HMD mode so that it will monitor just our tracker. Most of the below instructions are based on [the post here](https://www.notion.so/yeove/Using-SteamVR-without-a-VR-headset-f7ed4268708a42c787d1628768e61d35).
 
 #### 1. Enable the Null Driver (virtual headset)
 
@@ -52,7 +52,7 @@ Next, open your SteamVR user config file: <Steam install path>\resources\setting
 ### Pair the Tracker with the Base Stations
 
 #### Power on the Tracker
-- Press the tracker’s Power button. A short press (1 second) turns it on. The LED should start blue then turn green if it has been paired before). If it hasn’t been paired to the dongle/PC yet, it will blink blue seeking connection.
+- Press the tracker’s Power button. A short press (1 second) turns it on. The LED should start blue then turn green if it has been paired before. If it hasn’t been paired to the dongle/PC yet, it will blink blue seeking connection.
 
 #### Plug the Vive Tracker USB dongle into the PC
 - Initiate Pairing Mode: If the tracker isn’t automatically connecting, put it into pairing mode. Hold down the tracker's power button for about 2 seconds until the LED starts blinking blue (this indicates it's in pairing mode). In the SteamVR status window on your PC, click the menu and navigate to Devices > Pair Controller. (Trackers are paired through the same interface used for controllers.)
@@ -68,18 +68,12 @@ Next, open your SteamVR user config file: <Steam install path>\resources\setting
 ### Data Streaming & Guidance Visualization
 
 - We will be using this library, which provides Python bindings for Valve’s openVR library: https://github.com/cmbruns/pyopenvr
-- Create a new conda environment on your Windows computer, activate it, and run `pip install openvr`
+- If you haven't already, create a new conda environment on your Windows computer, activate it, and run `pip install openvr`
 
 To stream the probe positions to a HTTP endpoint that Monty on a Mac can access
 - Update your environment variable `VIVE_SERVER_URL` on the Mac computer to match the IPv4 address of the Windows PC
 - On the Windows laptop with OpenVR & SteamVR running, dongle inserted etc, run `htc_vive/server.py`
-- This provides a HTTP endpoint that provides the pose of the VIVE Tracker (xyz and rotation in quaternions in the reference frame of VIVE’s “standing” - i.e. for standing game playing - world coordinates)
+- This provides a HTTP endpoint that provides the pose of the Vive Tracker.
 
 #### Trouble-Shooting
 - Ensure the Windows PC and Macbook are connected to the same WiFi, in order for the server to work as expected
-
-
-### Provide accurate tracking via the server
-UPDATE
-- Attach tracker to ultrasound probe; *see image for correct positioning and orientation
-- Ensure the base stations are setup approximately on either side of the ultrasound phantom setup, such that they can both see the Tracker at most times

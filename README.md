@@ -126,11 +126,12 @@ You should also position the strap so that the center of the butterfly logo is a
 
 <img src="./custom_classes/figures/tracker_relative_bag.png" width="200"/>
 
-Note this visualization is only for the operator's benefit, and to enable interpreting "goal-states" sent by Monty; it does not affect the measured locations or displacements within Monty as the probe moves.
+You should see this change reflected in the visualization service. Note this visualization is only for the operator's benefit, and to enable interpreting "goal-states" sent by Monty; it does not affect the measured locations or displacements within Monty as the probe moves.
 
 - Run the Monty experiment `python run.py -e probe_triggered_experiment`
 - In the iPad app, click `Start Imaging`
-- Click two captures to enter inference phase → Infer by moving the probe and capturing more images!
+- Click two captures to enter inference phase. This circumvents a bug in the counter behavior in Monty that ignores the first 2 steps.
+- Infer by moving the probe and capturing more images!
 
 #### Next Object
 
