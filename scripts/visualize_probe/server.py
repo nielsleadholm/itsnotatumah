@@ -18,7 +18,8 @@ from vpython import arrow, box, button, canvas, color, mag, rate, vector
 # -----------------------------------------------------------------------------#
 # Configuration
 # -----------------------------------------------------------------------------#
-VIVE_SERVER_URL = "http://192.168.1.40:3001"
+VIVE_SERVER_URL = "http://192.168.1.237:3001"
+# TODO allow setting this via environment variable
 POSE_ENDPOINT = f"{VIVE_SERVER_URL}/pose"
 
 # Global variable to store the latest goal state
