@@ -44,23 +44,11 @@ class UltrasoundSM(SensorModuleBase):
             self.extract_patch_pose_feat(data["img"])
         )
 
-        print("Pixel depth in patch:")
-        print(pixel_depth_in_patch)
-        print("Patch pixel start:")
-        print(data["patch_pixel_start"])
-
+        # Derive depth from pixel location in image
         pixel_depth_in_image = data["patch_pixel_start"] + pixel_depth_in_patch
-
-        print("Pixel depth in image:")
-        print(pixel_depth_in_image)
-
         patch_depth = self.get_depth_from_pixel_location(
             data["full_image_height"], pixel_depth_in_image
         )
-
-        print("Patch depth:")
-        print(patch_depth)
-
         data["patch_depth"] = patch_depth
 
         patch_world_location = self.get_patch_world_location(
@@ -257,15 +245,9 @@ class UltrasoundSM(SensorModuleBase):
                   and curvature is a float representing the local curvature.
         """
 
-        print("\n\nDimensions of patch:")
-        print(np.shape(patch))
         # Get points on the first edge (from top) in the image
         all_column_points_tuples, center_edge_point = self.extract_edge_points(patch)
         all_column_points_np = np.array(all_column_points_tuples)
-
-        print("Central pixel:")
-        print(center_edge_point)
-
         # Store data for plotting
         self.plotting_data["column_points"] = all_column_points_tuples
         self.plotting_data["center_edge"] = center_edge_point
