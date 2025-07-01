@@ -119,7 +119,7 @@ base_ultrasound_experiment = {
     "monty_config": {
         "monty_class": MontyForEvidenceGraphMatching,
         "monty_args": MontyArgs(
-            min_eval_steps=20,
+            min_eval_steps=199,
             num_exploratory_steps=num_pretrain_steps,
         ),
         "learning_module_configs": {"learning_module_0": default_evidence_lm_config},
@@ -173,7 +173,7 @@ json_dataset_ultrasound_experiment["dataset_args"]["env_init_func"] = (
 )
 json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
     "data_path": os.path.join(
-        os.environ["MONTY_DATA"], "ultrasound_test_set/demo_object_spam/"
+        os.environ["MONTY_DATA"], "ultrasound_train_set/numenta_mug/"
     ),
     # "data_path": os.path.join(
     #     os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"
@@ -199,8 +199,8 @@ LM_config_for_learning = {
     }
 }
 # Loads an offline .json dataset and trains models on it.
-json_dataset_ultrasound_learning = deepcopy(json_dataset_ultrasound_experiment)
-json_dataset_ultrasound_learning.update(
+json_dataset_ultrasound_learning_meat_can = deepcopy(json_dataset_ultrasound_experiment)
+json_dataset_ultrasound_learning_meat_can.update(
     {
         "experiment_args": EvalExperimentArgs(
             do_train=True,
@@ -220,12 +220,34 @@ json_dataset_ultrasound_learning.update(
         },
         "train_dataloader_class": UltrasoundDataLoader,
         "train_dataloader_args": {"patch_size": 256},
+        "plotting_config": PlottingConfig(
+            enabled=False,
+        ),
     }
 )
-json_dataset_ultrasound_learning["monty_config"]["learning_module_configs"] = (
+json_dataset_ultrasound_learning_meat_can["monty_config"]["learning_module_configs"] = (
     LM_config_for_learning
 )
-json_dataset_ultrasound_learning["monty_config"]["monty_class"] = MontyForGraphMatching
+json_dataset_ultrasound_learning_meat_can["monty_config"]["monty_class"] = (
+    MontyForGraphMatching
+)
+
+json_dataset_ultrasound_learning_numenta_mug = deepcopy(
+    json_dataset_ultrasound_learning_meat_can
+)
+json_dataset_ultrasound_learning_numenta_mug.update(
+    {
+        "dataset_args": {
+            "env_init_func": JSONDatasetUltrasoundEnvironment,
+            "env_init_args": {
+                "data_path": os.path.join(
+                    os.environ["MONTY_DATA"],
+                    "ultrasound_train_set/numenta_mug/",
+                ),
+            },
+        },
+    }
+)
 
 # Define an experiment that is interactively triggered by use of the probe
 # Also makes use of goal-state generation.
@@ -298,7 +320,8 @@ probe_triggered_data_collection_experiment["plotting_config"] = PlottingConfig(
 CONFIGS = {
     "base_ultrasound_experiment": base_ultrasound_experiment,
     "json_dataset_ultrasound_experiment": json_dataset_ultrasound_experiment,
-    "json_dataset_ultrasound_learning": json_dataset_ultrasound_learning,
+    "json_dataset_ultrasound_learning_meat_can": json_dataset_ultrasound_learning_meat_can,
+    "json_dataset_ultrasound_learning_numenta_mug": json_dataset_ultrasound_learning_numenta_mug,
     "probe_triggered_experiment": probe_triggered_experiment,  # Default of only a few eval steps --> can use for demo
     "probe_triggered_data_collection_experiment": probe_triggered_data_collection_experiment,
 }
