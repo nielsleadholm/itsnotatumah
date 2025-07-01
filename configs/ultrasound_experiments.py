@@ -173,7 +173,7 @@ json_dataset_ultrasound_experiment["dataset_args"]["env_init_func"] = (
 )
 json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
     "data_path": os.path.join(
-        os.environ["MONTY_DATA"], "ultrasound_test_set/demo_object_spam//"
+        os.environ["MONTY_DATA"], "ultrasound_test_set/demo_object_spam/"
     ),
     # "data_path": os.path.join(
     #     os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"

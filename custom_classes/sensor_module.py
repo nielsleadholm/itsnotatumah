@@ -46,16 +46,15 @@ class UltrasoundSM(SensorModuleBase):
 
         # Derive depth from pixel location in image
         pixel_depth_in_image = data["patch_pixel_start"] + pixel_depth_in_patch
-        patch_depth = self.get_depth_from_pixel_location(
+        data["patch_depth"] = self.get_depth_from_pixel_location(
             data["full_image_height"], pixel_depth_in_image
         )
-        data["patch_depth"] = patch_depth
 
         patch_world_location = self.get_patch_world_location(
             tracker_position,
             probe_position,
             tracker_orientation,
-            patch_depth,
+            data["patch_depth"],
         )
 
         self.plotting_data["observed_locations"].append(patch_world_location)
@@ -247,6 +246,7 @@ class UltrasoundSM(SensorModuleBase):
         # Get points on the first edge (from top) in the image
         all_column_points_tuples, center_edge_point = self.extract_edge_points(patch)
         all_column_points_np = np.array(all_column_points_tuples)
+
         # Store data for plotting
         self.plotting_data["column_points"] = all_column_points_tuples
         self.plotting_data["center_edge"] = center_edge_point
