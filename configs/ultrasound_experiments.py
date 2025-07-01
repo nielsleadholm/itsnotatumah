@@ -119,7 +119,7 @@ base_ultrasound_experiment = {
     "monty_config": {
         "monty_class": MontyForEvidenceGraphMatching,
         "monty_args": MontyArgs(
-            min_eval_steps=199,
+            min_eval_steps=20,
             num_exploratory_steps=num_pretrain_steps,
         ),
         "learning_module_configs": {"learning_module_0": default_evidence_lm_config},
@@ -173,7 +173,7 @@ json_dataset_ultrasound_experiment["dataset_args"]["env_init_func"] = (
 )
 json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
     "data_path": os.path.join(
-        os.environ["MONTY_DATA"], "ultrasound_train_set/numenta_mug/"
+        os.environ["MONTY_DATA"], "ultrasound_test_set/demo_object_spam//"
     ),
     # "data_path": os.path.join(
     #     os.environ["MONTY_DATA"], "ultrasound_train_set/potted_meat_can_cleaned/"

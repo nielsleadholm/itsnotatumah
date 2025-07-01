@@ -107,9 +107,9 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
             window_size (int): Size of the window to calculate the local mean and std
                 of the gradient.
         Returns:
-            tuple: (patch, patch_start_location) where:
+            tuple: (patch, patch_pixel_start) where:
                 - patch (np.ndarray): The first patch with significant horizontal edge
-                - patch_start_location (int): the y pixel coordinate of start of the
+                - patch_pixel_start (int): the y pixel coordinate of start of the
                     patch; e.g. if the image is 200x800 pixels, this might be
                     pixel 240
         """
@@ -163,8 +163,8 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
             total_gradient = np.sum(np.abs(edge_response))
 
             # Note we use the initial y position of the patch for the depth,
-            # as later we will determine the location within the patch for the final
-            # depth reading
+            # as later we will determine the location of the edge within the patch for
+            # the final depth reading
             starting_y = y - test_patch_size // 2
             y_starting_positions.append(starting_y)
             y_central_positions.append(y)

@@ -244,7 +244,6 @@ class UltrasoundSM(SensorModuleBase):
                   representing the surface normal in the image plane (e.g., [nx, ny, 0]),
                   and curvature is a float representing the local curvature.
         """
-
         # Get points on the first edge (from top) in the image
         all_column_points_tuples, center_edge_point = self.extract_edge_points(patch)
         all_column_points_np = np.array(all_column_points_tuples)

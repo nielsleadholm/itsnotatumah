@@ -1,16 +1,16 @@
 # Vive Tracker Server
 
-Here we describe how to setup a Windows computer with a Vive Tracker ?3.0 device.
+Here we describe how to setup a Windows computer with a Vive Tracker 3.0 device.
 
-This will make use of SteamVR and ?Base Stations 2 to monitor where the Tracker is, and
+This will make use of SteamVR and Valve Base Stations to monitor where the Tracker is, and
 then stream this via a server to the Mac that is running a Monty experiment.
 
 ## Requirements
 
 - Windows 10+ PC with the latest version of Steam and SteamVR installed
-- `openvr`?
-- One (ideally two) ?Base Station 2 "Light Houses"
-- A Vive Tracker ?3.0, and its associated USB dongle.
+- `openvr`
+- One (ideally two) SteamVR Base Stations 2.0 ("Lighthouses")
+- A Vive Tracker 3.0, and its associated USB dongle.
 
 ## Steps
 
@@ -22,6 +22,7 @@ then stream this via a server to the Mac that is running a Monty experiment.
     - We use an older version of Miniconda with Python 3.8 support to enable compatibility with Monty v0.5.0
     - An installer can be found here [Miniconda3-py38_23.11.0-2-Windows-x86_64.exe](https://repo.anaconda.com/miniconda/Miniconda3-py38_23.11.0-2-Windows-x86_64.exe)
     - Note `conda` on Windows expects you to use the Anaconda Powershell Prompt, rather than the standard Windows Powershell to interact with it, so you need to launch this when activating your environment
+- Run `pip install openvr`
 
 ### Setup Base Stations
 - Plug in the base stations to power them on, and ensure they can see where the HTC Vive Tracker will be positioned

@@ -69,7 +69,7 @@ python run.py -e json_dataset_ultrasound_experiment
 
 ### Online Experiments
 
-You will need to follow a series of steups to run live, online experiments. These
+You will need to follow a series of steps to run live, online experiments. These
 steps will setup both the ability to capture ultrasound images via the iPad app, as well
 as track the position of the probe.
 
@@ -101,10 +101,10 @@ One you have the above systems setup, follow the below checklist to begin an exp
 
 To perform inference with the first object
 
-- Power on/unlock/plug in:
+- Get all equipment powered on and working
   - iPad: unlock
   - Vive USB dongle: plug into Windows computer
-  - Base stations: power on and position correctly
+  - Base stations: power on and position either side of the phantom setup; the exact position does not matter, but you want to maximize their ability to see the probe when it is moving
   - Tracker: power on, and ensure visible to base stations
   - Probe: plug into iPad
 - Launch SteamVR on Windows
