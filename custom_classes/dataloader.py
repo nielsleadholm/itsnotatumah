@@ -298,24 +298,5 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
 
         return best_patch, y_start
 
-    def get_depth_from_pixel_location(
-        self, full_image_height, pixel_depth_in_image, max_depth=7
-    ):
-        """Crops image and then calculates percentage from top of pixel location.
-
-        Args:
-            full_image_height: The height of the full ultrasound image in pixels
-            pixel_depth_in_image: The y pixel coordinate of the depth reading within the image
-            max_depth: Depth setting of the ultrasound probe, in cm
-
-        Returns:
-            float: Estimated depth of patch in meters
-        """
-        depth_perc = pixel_depth_in_image / full_image_height
-        depth_cm = depth_perc * max_depth
-        depth_m = depth_cm / 100
-
-        return depth_m
-
     def post_episode(self):
         self.dataset.env.switch_to_next_scene()
