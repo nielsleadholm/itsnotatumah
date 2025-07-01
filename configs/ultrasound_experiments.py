@@ -180,22 +180,6 @@ json_dataset_ultrasound_experiment["dataset_args"]["env_init_args"] = {
     # ),
 }
 
-json_end_to_end_calibration_experiment = deepcopy(json_dataset_ultrasound_experiment)
-json_end_to_end_calibration_experiment["dataset_args"]["env_init_args"] = {
-    "data_path": os.path.join(
-        os.environ["MONTY_DATA"], "ultrasound_test_set/end_to_end_calibration/"
-    ),
-}
-
-json_rotate_on_point_calibration_experiment = deepcopy(
-    json_dataset_ultrasound_experiment
-)
-json_rotate_on_point_calibration_experiment["dataset_args"]["env_init_args"] = {
-    "data_path": os.path.join(
-        os.environ["MONTY_DATA"], "ultrasound_test_set/rotate_on_point_calibration/"
-    ),
-}
-
 # For learning we use the DisplacementGraphLM.
 LM_config_for_learning = {
     "learning_module_0": {
@@ -270,7 +254,7 @@ probe_triggered_experiment["dataset_args"]["env_init_func"] = (
 probe_triggered_experiment["dataset_args"]["env_init_args"] = {
     "image_listen_port": 3000,
     "save_path": os.path.join(os.environ["MONTY_DATA"], "ultrasound_test_set/"),
-    "vive_url": "http://192.168.1.237:3001/pose",
+    "vive_url": "http://192.168.1.40:3001/pose",
 }
 probe_triggered_experiment["monty_config"]["learning_module_configs"] = {
     "learning_module_0": evidence_lm_config_with_gsg
@@ -308,15 +292,13 @@ probe_triggered_data_collection_experiment["monty_config"]["monty_args"] = Monty
 
 # Override plotting config to enable plotting for probe triggered experiments
 probe_triggered_data_collection_experiment["plotting_config"] = PlottingConfig(
-    enabled=True
+    enabled=False
 )
 
 CONFIGS = {
     "base_ultrasound_experiment": base_ultrasound_experiment,
     "json_dataset_ultrasound_experiment": json_dataset_ultrasound_experiment,
     "json_dataset_ultrasound_learning": json_dataset_ultrasound_learning,
-    "json_end_to_end_calibration_experiment": json_end_to_end_calibration_experiment,
-    "json_rotate_on_point_calibration_experiment": json_rotate_on_point_calibration_experiment,
     "probe_triggered_experiment": probe_triggered_experiment,  # Default of only a few eval steps --> can use for demo
     "probe_triggered_data_collection_experiment": probe_triggered_data_collection_experiment,
 }

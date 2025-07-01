@@ -316,41 +316,41 @@ def plot_hypothesis_space(
             title_prefix="2nd MLH",
         )
 
-    # # Display Text on h_ax3
-    # h_ax3.clear()
-    # h_ax3.axis("off")
+    # Display Text on h_ax3
+    h_ax3.clear()
+    h_ax3.axis("off")
 
-    # mlh_display_id = current_mlh_info.get("graph_id", "N/A")
-    # mlh_display_evidence = current_mlh_info.get("evidence", float("nan"))
-    # mlh_text = (
-    #     f"Most Likely Hypothesis:\n   {mlh_display_id} (Ev: {mlh_display_evidence:.2f})"
-    # )
-    # h_ax3.text(
-    #     0.05,
-    #     0.90,
-    #     mlh_text,
-    #     ha="left",
-    #     va="top",
-    #     fontsize=11,
-    #     weight="bold",
-    #     transform=h_ax3.transAxes,
-    #     linespacing=1.5,
-    # )
+    mlh_display_id = current_mlh_info.get("graph_id", "N/A")
+    mlh_display_evidence = current_mlh_info.get("evidence", float("nan"))
+    mlh_text = (
+        f"Most Likely Hypothesis:\n   {mlh_display_id} (Ev: {mlh_display_evidence:.2f})"
+    )
+    h_ax3.text(
+        0.05,
+        0.90,
+        mlh_text,
+        ha="left",
+        va="top",
+        fontsize=11,
+        weight="bold",
+        transform=h_ax3.transAxes,
+        linespacing=1.5,
+    )
 
-    # current_y_pos = 0.75
-    # possible_objects_str = "Possible:\n" + "\n".join(
-    #     [f"   {obj}" for obj in possible_matches]
-    # )
-    # h_ax3.text(
-    #     0.05,
-    #     current_y_pos,
-    #     possible_objects_str,  # Use the directly formatted string
-    #     ha="left",
-    #     va="top",
-    #     fontsize=9,
-    #     transform=h_ax3.transAxes,
-    #     linespacing=1.5,
-    # )
+    current_y_pos = 0.75
+    possible_objects_str = "Possible:\n" + "\n".join(
+        [f"   {obj}" for obj in possible_matches]
+    )
+    h_ax3.text(
+        0.05,
+        current_y_pos,
+        possible_objects_str,  # Use the directly formatted string
+        ha="left",
+        va="top",
+        fontsize=9,
+        transform=h_ax3.transAxes,
+        linespacing=1.5,
+    )
 
 
 def plot_patch_with_features(
@@ -386,98 +386,97 @@ def plot_patch_with_features(
         normal_rel_world: List of [nx,ny,nz] observed normal vectors in world frame.
     """
     # Clear previous plots on the provided axes
-    # ax1.clear()
-    # ax2.clear()
+    ax1.clear()
+    ax2.clear()
     ax3.clear()
 
-    # # Plot full input image on the left
-    # ax1.imshow(input_image, cmap="gray")
-    # ax1.set_title("Input Image")
-    # ax1.axis("off")
+    # Plot full input image on the left
+    ax1.imshow(input_image, cmap="gray")
+    ax1.set_title("Input Image")
+    ax1.axis("off")
 
-    # # Plot patch with features on the right
-    # ax2.imshow(patch_image, cmap="gray")
-    # ax2.set_title("Patch with Features")
+    # Plot patch with features on the right
+    ax2.imshow(patch_image, cmap="gray")
+    ax2.set_title("Patch with Features")
 
-    # legend_elements = []
+    legend_elements = []
 
-    # # Plot column points
-    # if all_column_points_tuples and len(all_column_points_tuples) > 0:
-    #     points = np.array(all_column_points_tuples)
-    #     ax2.scatter(points[:, 0], points[:, 1], c="r", s=1)
-    #     legend_elements.append(
-    #         plt.Line2D(
-    #             [0],
-    #             [0],
-    #             marker="o",
-    #             color="w",
-    #             markerfacecolor="r",
-    #             markersize=5,
-    #             label="Points on Edge",
-    #         )
-    #     )
+    # Plot column points
+    if all_column_points_tuples and len(all_column_points_tuples) > 0:
+        points = np.array(all_column_points_tuples)
+        ax2.scatter(points[:, 0], points[:, 1], c="r", s=1)
+        legend_elements.append(
+            plt.Line2D(
+                [0],
+                [0],
+                marker="o",
+                color="w",
+                markerfacecolor="r",
+                markersize=5,
+                label="Points on Edge",
+            )
+        )
 
-    # if center_edge_point is not None:
-    #     ax2.scatter(center_edge_point[0], center_edge_point[1], c="g", s=50)
-    #     legend_elements.append(
-    #         plt.Line2D(
-    #             [0],
-    #             [0],
-    #             marker="o",
-    #             color="w",
-    #             markerfacecolor="g",
-    #             markersize=8,
-    #             label="Center Edge",
-    #         )
-    #     )
+    if center_edge_point is not None:
+        ax2.scatter(center_edge_point[0], center_edge_point[1], c="g", s=50)
+        legend_elements.append(
+            plt.Line2D(
+                [0],
+                [0],
+                marker="o",
+                color="w",
+                markerfacecolor="g",
+                markersize=8,
+                label="Center Edge",
+            )
+        )
 
-    # if fitted_circle is not None:
-    #     circle_patch = Circle(
-    #         (fitted_circle[0], fitted_circle[1]),
-    #         fitted_circle[2],
-    #         fill=False,
-    #         color="b",
-    #     )
-    #     ax2.add_patch(circle_patch)
-    #     legend_elements.append(plt.Line2D([0], [0], color="b", label="Fitted Circle"))
+    if fitted_circle is not None:
+        circle_patch = Circle(
+            (fitted_circle[0], fitted_circle[1]),
+            fitted_circle[2],
+            fill=False,
+            color="b",
+        )
+        ax2.add_patch(circle_patch)
+        legend_elements.append(plt.Line2D([0], [0], color="b", label="Fitted Circle"))
 
-    # if point_normal is not None and center_edge_point is not None:
-    #     scale = 20
-    #     start_x = center_edge_point[0]
-    #     start_y = center_edge_point[1]
-    #     plot_dx = point_normal[0] * scale
-    #     plot_dy = point_normal[1] * scale
-    #     ax2.arrow(
-    #         start_x,
-    #         start_y,
-    #         plot_dx,
-    #         plot_dy,
-    #         head_width=3,
-    #         head_length=5,
-    #         fc="y",
-    #         ec="y",
-    #     )
-    #     legend_elements.append(plt.Line2D([0], [0], color="y", label="Point Normal"))
+    if point_normal is not None and center_edge_point is not None:
+        scale = 20
+        start_x = center_edge_point[0]
+        start_y = center_edge_point[1]
+        plot_dx = point_normal[0] * scale
+        plot_dy = point_normal[1] * scale
+        ax2.arrow(
+            start_x,
+            start_y,
+            plot_dx,
+            plot_dy,
+            head_width=3,
+            head_length=5,
+            fc="y",
+            ec="y",
+        )
+        legend_elements.append(plt.Line2D([0], [0], color="y", label="Point Normal"))
 
-    # text = f"Curvature: {curvature:.3f}\nDepth: {depth_meters * 100:.3f}cm"
-    # ax2.text(
-    #     5,
-    #     patch_image.shape[0] - 20,
-    #     text,
-    #     color="white",
-    #     fontsize=8,
-    #     bbox=dict(facecolor="black", alpha=0.5),
-    # )
+    text = f"Curvature: {curvature:.3f}\nDepth: {depth_meters * 100:.3f}cm"
+    ax2.text(
+        5,
+        patch_image.shape[0] - 20,
+        text,
+        color="white",
+        fontsize=8,
+        bbox=dict(facecolor="black", alpha=0.5),
+    )
 
-    # if legend_elements:
-    #     ax2.legend(handles=legend_elements, loc="upper right")
-    # ax2.axis("off")
+    if legend_elements:
+        ax2.legend(handles=legend_elements, loc="upper right")
+    ax2.axis("off")
 
     locations_np = np.array(observed_locations)
-    # Convert from meters to centimeters
-    x = locations_np[:, 1] * 100
-    y = locations_np[:, 0] * 100
-    z = locations_np[:, 2] * 100
+    x = locations_np[:, 1]
+    y = locations_np[:, 0]
+    z = locations_np[:, 2]
     ax3.scatter(x, y, z, c="b", marker="o", s=10, label="Observed Locations")
     if normal_rel_world and len(normal_rel_world) == len(observed_locations):
         normals_np = np.array(normal_rel_world)
@@ -492,28 +491,28 @@ def plot_patch_with_features(
                 u,
                 v,
                 w,
-                length=10,  # Increased length to match cm scale
+                length=0.1,
                 normalize=True,
                 color="r",
                 label="World Normals",
             )
-    ax3.set_xlabel("X (world) [cm]")
-    ax3.set_ylabel("Y (world) [cm]")
-    ax3.set_zlabel("Z (world) [cm]")
+    ax3.set_xlabel("X (world)")
+    ax3.set_ylabel("Y (world)")
+    ax3.set_zlabel("Z (world)")
     ax3.set_title("Observed Patch Locations")
     if len(x) > 1:
-        ax3.set_xlim([np.min(x) - 10, np.max(x) + 10])  # Adjusted margins to cm
-        ax3.set_ylim([np.min(y) - 10, np.max(y) + 10])
-        ax3.set_zlim([np.min(z) - 10, np.max(z) + 10])
+        ax3.set_xlim([np.min(x) - 0.1, np.max(x) + 0.1])
+        ax3.set_ylim([np.min(y) - 0.1, np.max(y) + 0.1])
+        ax3.set_zlim([np.min(z) - 0.1, np.max(z) + 0.1])
     elif len(x) == 1:
-        ax3.set_xlim([x[0] - 50, x[0] + 50])  # Adjusted margins to cm
-        ax3.set_ylim([y[0] - 50, y[0] + 50])
-        ax3.set_zlim([z[0] - 50, z[0] + 50])
+        ax3.set_xlim([x[0] - 0.5, x[0] + 0.5])
+        ax3.set_ylim([y[0] - 0.5, y[0] + 0.5])
+        ax3.set_zlim([z[0] - 0.5, z[0] + 0.5])
     ax3.view_init(elev=20.0, azim=-35)
     ax3.grid(True)
-    # ax3.set_xticks([])
-    # ax3.set_yticks([])
-    # ax3.set_zticks([])
+    ax3.set_xticks([])
+    ax3.set_yticks([])
+    ax3.set_zticks([])
 
 
 def plot_combined_figure(
@@ -574,20 +573,20 @@ def plot_combined_figure(
 
         if show_hypothesis_space:
             _fig = plt.figure(figsize=(18, 12))
-            gs = _fig.add_gridspec(1, 3)  # Use gridspec for better layout control
-            # _ax1 = _fig.add_subplot(gs[0, 0])
-            # _ax2 = _fig.add_subplot(gs[0, 1])
-            _ax3 = _fig.add_subplot(gs[0, 0], projection="3d")
-            _h_ax1 = _fig.add_subplot(gs[0, 1], projection="3d")
-            _h_ax2 = _fig.add_subplot(gs[0, 2], projection="3d")
-            # _h_ax3 = _fig.add_subplot(gs[0, 3])  # Text axis
+            gs = _fig.add_gridspec(2, 3)  # Use gridspec for better layout control
+            _ax1 = _fig.add_subplot(gs[0, 0])
+            _ax2 = _fig.add_subplot(gs[0, 1])
+            _ax3 = _fig.add_subplot(gs[0, 2], projection="3d")
+            _h_ax1 = _fig.add_subplot(gs[1, 0], projection="3d")
+            _h_ax2 = _fig.add_subplot(gs[1, 1], projection="3d")
+            _h_ax3 = _fig.add_subplot(gs[1, 2])  # Text axis
             _current_fig_is_double_row = True
         else:
             _fig = plt.figure(figsize=(18, 6))
             gs = _fig.add_gridspec(1, 3)  # Use gridspec
-            # _ax1 = _fig.add_subplot(gs[0, 0])
-            # _ax2 = _fig.add_subplot(gs[0, 1])
-            _ax3 = _fig.add_subplot(gs[0, 0], projection="3d")
+            _ax1 = _fig.add_subplot(gs[0, 0])
+            _ax2 = _fig.add_subplot(gs[0, 1])
+            _ax3 = _fig.add_subplot(gs[0, 2], projection="3d")
             _h_ax1, _h_ax2, _h_ax3 = (
                 None,
                 None,
@@ -637,4 +636,4 @@ def plot_combined_figure(
     if _fig:
         _fig.canvas.draw()
         _fig.canvas.flush_events()
-        plt.pause(1.0)  # Short pause to allow plot to update
+        plt.pause(0.1)  # Short pause to allow plot to update
