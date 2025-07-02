@@ -106,7 +106,7 @@ To perform inference with the first object
   - Vive USB dongle: plug into Windows computer
   - Base stations: power on and position either side of the phantom setup; the exact position does not matter, but you want to maximize their ability to see the probe when it is moving
   - Tracker: power on, and ensure visible to base stations
-  - Probe: plug into iPad
+  - Ultrasound probe: plug into iPad
 - Launch SteamVR on Windows
 - Check probe orientation:
 
