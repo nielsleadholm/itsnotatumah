@@ -95,7 +95,7 @@ Instructions for the iPad app setup can be found [in the following README](./scr
 
 Instructions for the tracker server can be found [in the following README](./scripts/htc_vive/README.md).
 
-One you have the above systems setup, follow the below checklist to begin an experiment:
+Once you have the above systems set up, follow the checklist below to begin an experiment:
 
 #### First Object
 
