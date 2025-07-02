@@ -73,15 +73,15 @@ You will need to follow a series of steps to run live, online experiments. These
 steps will setup both the ability to capture ultrasound images via the iPad app, as well
 as track the position of the probe.
 
-At a high level, the below commands will run an interactive experiment:
+The basic commands to actually run experiments are:
 
-To run an interactive, live Ultrasound experiment (e.g., to evaluate inference during a
+For an interactive, live Ultrasound experiment (e.g., to evaluate inference during a
 demo), run:
 ```bash
 python run.py -e probe_triggered_experiment
 ```
 
-To run a live Ultrasound experiment to collect a new .json dataset (e.g., to create
+For a live Ultrasound experiment to collect a new .json dataset (e.g., to create
 a new training dataset), run:
 ```bash
 python run.py -e probe_triggered_data_collection_experiment
@@ -130,7 +130,6 @@ You should see this change reflected in the visualization service. Note this vis
 
 - Run the Monty experiment `python run.py -e probe_triggered_experiment`
 - In the iPad app, click `Start Imaging`
-- Click two captures to enter inference phase. This circumvents a bug in the counter behavior in Monty that ignores the first 2 steps.
 - Infer by moving the probe and capturing more images!
 
 #### Next Object
