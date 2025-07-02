@@ -5,8 +5,8 @@ Outputs position (metres) and orientation (yaw,-pitch,-roll in °, SteamVR Y-X-Z
 Includes VPython visualization of the tracker's pose.
 Connects to HTTP service instead of using OpenVR directly.
 """
-
 import json
+import os
 import sys
 import time
 
@@ -18,7 +18,15 @@ from vpython import arrow, box, button, canvas, color, mag, rate, vector
 # -----------------------------------------------------------------------------#
 # Configuration
 # -----------------------------------------------------------------------------#
-VIVE_SERVER_URL = "http://192.168.1.40:3001"
+try:
+    VIVE_SERVER_URL = os.environ.get("VIVE_SERVER_URL")
+except Exception as e:
+    print(f"Error getting VIVE_SERVER_URL from environment: {e}")
+    print(
+        "Please set the VIVE_SERVER_URL environment variable, e.g. VIVE_SERVER_URL='http://192.168.1.237:3001'"
+    )
+    sys.exit(1)
+
 POSE_ENDPOINT = f"{VIVE_SERVER_URL}/pose"
 
 # Global variable to store the latest goal state

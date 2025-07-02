@@ -38,6 +38,18 @@ class UltrasoundSM(SensorModuleBase):
             )
         )
 
+        # normal_rel_patch will point up (in y direction). In the world frame it should
+        # point towards the agent.
+        normal_rel_patch, curvature, pixel_depth_in_patch = (
+            self.extract_patch_pose_feat(data["img"])
+        )
+
+        # Derive depth from pixel location in image
+        pixel_depth_in_image = data["patch_pixel_start"] + pixel_depth_in_patch
+        data["patch_depth"] = self.get_depth_from_pixel_location(
+            data["full_image_height"], pixel_depth_in_image
+        )
+
         patch_world_location = self.get_patch_world_location(
             tracker_position,
             probe_position,
@@ -47,9 +59,6 @@ class UltrasoundSM(SensorModuleBase):
 
         self.plotting_data["observed_locations"].append(patch_world_location)
 
-        # normal_rel_patch will point up (in y direction). In the world frame it should
-        # point towards the agent.
-        normal_rel_patch, curvature = self.extract_patch_pose_feat(data["img"])
         # apply tracker orientation quaternion to patch pose feat
         # To ensure normal_rel_world points towards the agent, we negate normal_rel_patch.
         # TODO: make sure first curvature direction is aligned with plane of image
@@ -84,6 +93,25 @@ class UltrasoundSM(SensorModuleBase):
             sender_type="SM",
         )
         return CMP_output
+
+    def get_depth_from_pixel_location(
+        self, full_image_height, pixel_depth_in_image, max_depth=7
+    ):
+        """Crops image and then calculates percentage from top of pixel location.
+
+        Args:
+            full_image_height: The height of the full ultrasound image in pixels
+            pixel_depth_in_image: The y pixel coordinate of the depth reading within the image
+            max_depth: Depth setting of the ultrasound probe, in cm
+
+        Returns:
+            float: Estimated depth of patch in meters
+        """
+        depth_perc = pixel_depth_in_image / full_image_height
+        depth_cm = depth_perc * max_depth
+        depth_m = depth_cm / 100
+
+        return depth_m
 
     def get_patch_world_location(
         self,
@@ -241,7 +269,9 @@ class UltrasoundSM(SensorModuleBase):
         # Calculate the normal vector based on the fitted curve
         normal_3d = self.calculate_normal_from_fit(fit_params, center_edge_point)
 
-        return normal_3d, curvature
+        y_depth_in_image = center_edge_point[1]
+
+        return normal_3d, curvature, y_depth_in_image
 
     def extract_edge_points(self, image):
         """Extract edge points from the image by scanning each column for intensity values

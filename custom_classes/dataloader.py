@@ -76,13 +76,14 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
 
     def extract_patch(self, observation):
         full_image = np.array(observation["agent_id_0"]["ultrasound"]["img"])
-        patch, patch_depth = self.find_patch_with_highest_gradient(
+        patch, patch_pixel_start = self.find_patch_with_highest_gradient(
             full_image,
             patch_size=self.patch_size,
         )
         observation["agent_id_0"]["patch"] = {}
         observation["agent_id_0"]["patch"]["img"] = patch
-        observation["agent_id_0"]["patch"]["patch_depth"] = patch_depth
+        observation["agent_id_0"]["patch"]["patch_pixel_start"] = patch_pixel_start
+        observation["agent_id_0"]["patch"]["full_image_height"] = full_image.shape[0]
         # remove the ultrasound image from the observation
         del observation["agent_id_0"]["ultrasound"]
         return observation
@@ -106,16 +107,19 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
             window_size (int): Size of the window to calculate the local mean and std
                 of the gradient.
         Returns:
-            tuple: (patch, location) where:
+            tuple: (patch, patch_pixel_start) where:
                 - patch (np.ndarray): The first patch with significant horizontal edge
-                - location (tuple): (y, x) pixel coordinates of the patch center
+                - patch_pixel_start (int): the y pixel coordinate of start of the
+                    patch; e.g. if the image is 200x800 pixels, this might be
+                    pixel 240
         """
         height, width = full_image.shape
         x_center = width // 2
         start_y = patch_size // 2
 
         best_location = None
-        y_positions = []
+        y_starting_positions = []
+        y_central_positions = []
         gradients = []
 
         # Define Sobel kernel for horizontal edge detection
@@ -158,11 +162,17 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
             # Calculate total edge response
             total_gradient = np.sum(np.abs(edge_response))
 
-            y_positions.append(y)
+            # Note we use the initial y position of the patch for the depth,
+            # as later we will determine the location of the edge within the patch for
+            # the final depth reading
+            starting_y = y - test_patch_size // 2
+            y_starting_positions.append(starting_y)
+            y_central_positions.append(y)
             gradients.append(total_gradient)
 
         gradients = np.array(gradients)
-        y_positions = np.array(y_positions)
+        y_starting_positions = np.array(y_starting_positions)
+        y_central_positions = np.array(y_central_positions)
         max_gradient = np.max(gradients)
 
         # Pad the gradients array to allow local window calculations for earlier values
@@ -185,22 +195,24 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
                 and local_std > (np.std(gradients) // 10)
                 and gradients[i] > max_gradient / 2
             ):
-                best_location = (y_positions[i], x_center)
+                best_central_location = (y_central_positions[i], x_center)
+                best_starting_location = (y_starting_positions[i], x_center)
                 break
 
         # If no peak found, use the maximum gradient
         if best_location is None:
             max_idx = np.argmax(gradients)
-            best_location = (y_positions[max_idx], x_center)
+            best_central_location = (y_central_positions[max_idx], x_center)
+            best_starting_location = (y_starting_positions[max_idx], x_center)
 
         # Extract the final patch at the selected location
-        y, x = best_location
+        y, x = best_central_location
         best_patch = full_image[
             y - patch_size // 2 : y + patch_size // 2,
             x - patch_size // 2 : x + patch_size // 2,
         ]
 
-        depth = self.get_depth_from_pixel_location(full_image, best_location)
+        y_start, x_start = best_starting_location
 
         # # Visualize the results
         # plt.figure(figsize=(15, 5))
@@ -284,24 +296,7 @@ class UltrasoundDataLoader(EnvironmentDataLoader):
         # plt.tight_layout()
         # plt.show()
 
-        return best_patch, depth
-
-    def get_depth_from_pixel_location(self, img, pixel_location, max_depth=7):
-        """Crops image and then calculates percentage from top of pixel location.
-
-        Args:
-            img: The input ultrasound image
-            pixel_location: Tuple of (y, x) coordinates
-            max_depth: Depth setting of the ultrasound probe
-
-        Returns:
-            float: Estimated depth of patch in meters
-        """
-        depth_perc = pixel_location[0] / img.shape[0]
-        depth_cm = depth_perc * max_depth
-        depth_m = depth_cm / 100
-
-        return depth_m
+        return best_patch, y_start
 
     def post_episode(self):
         self.dataset.env.switch_to_next_scene()

@@ -9,14 +9,20 @@
 
 ## Running
 
-- Open XCode and open a new project `./scripts/ipad_app/ButterflyImagingKitExample.xcodeproj`
+- Begin by following the steps to [add your Butterfly Access Token](https://github.com/ButterflyNetwork/ImagingSDK-iOS/blob/main/Docs/AccessToken.md)
 
-- Set your Butterfly Client Key in the file `./scripts/ipad_app/ButterflyImagingKitExample/ButterflyImagingKitExampleApp.swift`
+- Open XCode and open the project `./scripts/ipad_app/ButterflyImagingKitExample.xcodeproj`
+
+- Set your Butterfly Client Key in the file `./scripts/ipad_app/ButterflyImagingKitExample/ButterflyImagingKitExampleApp.swift` (with quotation marks)
 
 - Set a Bundle Identifier in Project -> General, it can be anything but it does neet to be set.
 
+- If you run into any issues, see [Butterfly's README Guide](https://github.com/ButterflyNetwork/ImagingSDK-iOS?tab=readme-ov-file), including their [Troubleshooting Guide](https://github.com/ButterflyNetwork/ImagingSDK-iOS/blob/main/Docs/Troubleshoot.md)
+
 
 ![](bundle.png)
+
+- If you reveive the error message `ProbeDisabled-Reason.offlineTooLong`, try first connecting your Butterfly device to a smart device (iOS or Android) with the official Butterfly iQ app installed and setup. This should reset the probe, allowing you to reconnect it to the device with the custom Butterfly app running.
 
 - Add yourself to the developer settings in your iPad/iPhone
     - Connect your iPad to the computer using a usb-c -> usb-c cable.
@@ -33,23 +39,8 @@
 ## Notes
 
 This app is preconfigured to use the muskuloskeletal preset, which is good for the test data set that we used, if you're using soft tissue you should switch this default to something more suitable.
-The depth is defaulted to 7, and the down stream patch processing assumes this value.
+The depth is defaulted to 7cm, and the down-stream patch processing assumes this value.
 There is a hardcoded IP addresses in the code for the location of the running Monty service where the images are sent.
-- Monty Server - 192.168.1.140 - this can be changed / added to in `Model.swift`
-
-# Usage
-
-- Attach your Vive controller to the probe.
-- Connect your probe the usb-c port.
-- Launch the iPad app.  This depends on the following services:
-    - A running Monty application.
-    - A running Vive service.
-    - A running visualization service.
-- Set the probe home location by holding the probe underneath the phantom and pressing the top button.  You should see this change reflected in the visualization service.
-- Click the probe center button twice, in order to get past as strange behavior in Monty that ignores the first 2 steps.
-- Press the center button to take an image and send it to the Monty service.
-
-# Starting a New Inference Session
-- In the iPad app, there is a "Reset Counter" button, click this to return the counter to 0.
-- Restart your Monty system.
-- Continue as is Usage.
+- Monty Server - 192.168.1.140 - this can be changed / added to in `Model.swift`. To find your IP address on your Mac, go to your Network settings, select `Details...` by the WiFi network you are connected to, and then `TCP/IP`. 
+- Note that after updating the IP address in your Xcode app, you will need to resync it to the iPad (connect the iPad with USB-C and select Run) to ensure it is updated there.
+- Alternatively, you can update the IP address directly when launching the iPad app (text box in bottom-left region).
