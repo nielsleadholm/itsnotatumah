@@ -137,7 +137,7 @@ You should see this change reflected in the visualization service. Note this vis
 To continue inference with a subsequent object
 
 - Change the object in the bag
-- Stop the Monty experiment + start it again
+- Stop the Monty experiment (if it hasn't terminated on it's own already) + start it again with the above command
 - Press the "Reset step counter" button in the iPad app
 - Click two captures → Infer!
 
