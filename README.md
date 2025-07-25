@@ -1,8 +1,6 @@
-# It's not a Tumah!
+# Monty for Ultrasound POC
 
 Demo code for Monty on Ultrasound data. Project produced during TBP Robot Hackathon 2025.
-
-<img src="https://ih1.redbubble.net/image.926924257.3854/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg" width="200">
 
 ## Installation
 
